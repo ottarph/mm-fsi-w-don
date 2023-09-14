@@ -38,8 +38,28 @@ class MeshData:
             ids = np.flatnonzero(u.vector().get_local()).astype(np.int32)
 
             self.boundary_dof_indices = ids
+            self.boundary_dof_coordinate_array = V.tabulate_dof_coordinates()[ids]
 
         return self.boundary_dof_indices
+    
+    @property
+    def boundary_dof_coordinates(self) -> np.ndarray:
+
+        if not hasattr(self, "boundary_dof_coordinate_array"):
+            
+            V = df.FunctionSpace(self.mesh, "CG", self.function_space.ufl_element().degree())
+            u = df.Function(V)
+            bc = df.DirichletBC(V, df.Constant(1), "on_boundary")
+
+            u.vector()[:] = 0.0
+            bc.apply(u.vector())
+
+            ids = np.flatnonzero(u.vector().get_local()).astype(np.int32)
+
+            self.boundary_dof_indices = ids
+            self.boundary_dof_coordinate_array = V.tabulate_dof_coordinates()[ids]
+
+        return self.boundary_dof_coordinate_array
     
 
 class MeshDataXDMF(MeshData):
