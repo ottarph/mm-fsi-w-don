@@ -178,6 +178,47 @@ class FEniCSDataset(Dataset):
         y = self.y_transform(y)
 
         return x, y
+    
+
+def load_MeshData(directory: PathLike, style: Literal["XDMF", "folders"] = "folders") -> tuple[MeshData, MeshData]:
+    directory = Path(directory)
+    import json
+
+    with open(directory / "info.json", "r") as infile:
+        info_dict= json.loads(infile.read())
+
+    if not ( (directory / "input.xdmf").exists() and (directory / "output.xdmf").exists() ):
+        raise FileNotFoundError("Can not find dataset .xdmf-files")
+
+    input_dict = info_dict["input"]
+    output_dict = info_dict["output"]
+
+    if style == "XDMF":
+
+        x_data = MeshDataXDMF(directory / "input.xdmf", input_dict["type"],
+                              input_dict["dim"], input_dict["degree"], 
+                              range(info_dict["num_checkpoints"]), input_dict["label"])
+        y_data = MeshDataXDMF(directory / "output.xdmf", output_dict["type"],
+                              output_dict["dim"], output_dict["degree"], 
+                              range(info_dict["num_checkpoints"]), output_dict["label"])
+
+    elif style == "folders":
+
+        if not ( (directory / "input_dir").exists() and (directory / "output_dir").exists() ):
+            raise FileNotFoundError("Can not find dataset folders")
+        
+        x_data = MeshDataFolders(directory / "input_dir", directory / "input.xdmf",
+                                 range(info_dict["num_checkpoints"]), input_dict["type"], 
+                                 input_dict["degree"], input_dict["dim"])
+        y_data = MeshDataFolders(directory / "output_dir", directory / "output.xdmf",
+                                 range(info_dict["num_checkpoints"]), output_dict["type"], 
+                                 output_dict["degree"], output_dict["dim"])
+    
+    else:
+        raise ValueError()
+
+    return x_data, y_data
+
 
 class OnBoundary(Module):
 
