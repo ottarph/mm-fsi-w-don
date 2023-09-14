@@ -180,7 +180,9 @@ class DeepONet(nn.Module):
 
         """
 
-        assert u.shape[0] == y.shape[0]
+        print(f"{u.shape = }")
+        print(f"{y.shape = }")
+        assert u.shape[0] == y.shape[0] or y.shape[0] == 1
 
         assert len(u.shape) == 3
         assert u.shape[1] == self.sensors.shape[0]

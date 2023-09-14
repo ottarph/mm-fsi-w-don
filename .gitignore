@@ -3,3 +3,5 @@
 *.h5
 *.npy
 info.json
+
+__pycache__

@@ -38,7 +38,7 @@ class MeshData:
             ids = np.flatnonzero(u.vector().get_local()).astype(np.int32)
 
             self.boundary_dof_indices = ids
-            self.boundary_dof_coordinate_array = V.tabulate_dof_coordinates()[ids]
+            self.boundary_dof_coordinate_array = torch.tensor(V.tabulate_dof_coordinates()[ids])
 
         return self.boundary_dof_indices
     
@@ -57,9 +57,19 @@ class MeshData:
             ids = np.flatnonzero(u.vector().get_local()).astype(np.int32)
 
             self.boundary_dof_indices = ids
-            self.boundary_dof_coordinate_array = V.tabulate_dof_coordinates()[ids]
+            self.boundary_dof_coordinate_array = torch.tensor(V.tabulate_dof_coordinates()[ids])
 
         return self.boundary_dof_coordinate_array
+    
+    @property
+    def dof_coordinates(self) -> np.ndarray:
+
+        if not hasattr(self, "dof_coordinate_array"):
+
+            V = df.FunctionSpace(self.mesh, "CG", self.function_space.ufl_element().degree())
+            self.dof_coordinate_array = torch.tensor(V.tabulate_dof_coordinates())
+
+        return self.dof_coordinate_array
     
 
 class MeshDataXDMF(MeshData):

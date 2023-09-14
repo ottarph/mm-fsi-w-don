@@ -1,0 +1,21 @@
+{
+    "branch": {
+        "MLP": {
+            "widths": [1760, 256, 32],
+            "activation": "Tanh"
+        }
+    },
+    "trunk": {
+        "MLP": {
+            "widths": [2, 64, 32],
+            "activation": "Tanh"
+        }
+    },
+    "width": 16,
+    "final_bias": false,
+    "dataset": {
+        "directory": "dataset/learnext_harm_biharm",
+        "style": "folders",
+        "batch_size": 256
+    }
+}
