@@ -180,8 +180,6 @@ class DeepONet(nn.Module):
 
         """
 
-        print(f"{u.shape = }")
-        print(f"{y.shape = }")
         assert u.shape[0] == y.shape[0] or y.shape[0] == 1
 
         assert len(u.shape) == 3
