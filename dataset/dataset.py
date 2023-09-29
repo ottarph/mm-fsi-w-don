@@ -271,3 +271,15 @@ class AddCoordinates(Module):
         super().__init__()
 
         raise NotImplementedError()    
+    
+
+class ToDType(Module):
+
+    def __init__(self, dtype: torch.dtype | Literal["default"] = "default"):
+        super().__init__()
+
+        self.dtype = torch.get_default_dtype() if dtype == "default" else dtype
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return x.to(dtype=self.dtype)
+    
