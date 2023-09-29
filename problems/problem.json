@@ -17,5 +17,18 @@
         "directory": "dataset/artificial_learnext",
         "style": "XDMF",
         "batch_size": 1
+    },
+    "loss_fn": {
+        "MSELoss": {
+        }
+    },
+    "optimizer": {
+        "Adam": {
+        }
+    },
+    "scheduler": {
+        "ConstantLR": {
+            "factor": 1.0
+        }
     }
 }
