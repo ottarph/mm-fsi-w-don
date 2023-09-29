@@ -15,8 +15,8 @@
     "final_bias": false,
     "dataset": {
         "directory": "dataset/artificial_learnext",
-        "style": "XDMF",
-        "batch_size": 1
+        "style": "folders",
+        "batch_size": 128
     },
     "loss_fn": {
         "MSELoss": {

@@ -17,7 +17,7 @@ x_data, y_data = load_MeshData(problemdict["dataset"]["directory"], problemdict[
 dataset = FEniCSDataset(x_data, y_data, 
                     x_transform=nn.Sequential(OnBoundary(x_data), ToDType("default")),
                     y_transform=ToDType("default"))
-dataloader = DataLoader(dataset, batch_size=problemdict["dataset"]["batch_size"])
+dataloader = DataLoader(dataset, batch_size=1)
 x0, y0 = next(iter(dataloader))
 print(f"{x0.shape = }")
 print(f"{y0.shape = }")
