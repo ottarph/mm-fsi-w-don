@@ -32,18 +32,22 @@ def run_boundary_problem(problem_file: Path, results_dir: Path) -> None:
     print(f"{z0.shape = }")
     print(f"{z0.dtype = }")
 
+    losses = np.zeros(10)
     for k in range(10):
         z0 = deeponet(x0, evaluation_points)
         print(f"{k = }, {loss_fn(z0, y0) = }")
         optimizer.zero_grad()
-        loss_fn(z0, y0).backward()
+        loss = loss_fn(z0, y0)
+        losses[k] = loss.item()
+        loss.backward()
         optimizer.step()
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-            scheduler.step(loss_fn(z0, y0).item())
+            scheduler.step(loss.item())
         else:
             scheduler.step()
         print(f"lr = {optimizer.param_groups[0]['lr']}")
 
+    np.savetxt(results_dir / "losses.txt", losses)
 
     return
 
