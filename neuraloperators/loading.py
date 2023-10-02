@@ -128,7 +128,7 @@ def build_scheduler(optimizer, scheduler_dict: dict) -> LR_Scheduler:
 
 def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json") \
     -> tuple[neuraloperators.deeponet.DeepONet, DataLoader, 
-             torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss]:
+             torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, int]:
     
     import json
     problem_path = Path(problem_path)
@@ -162,6 +162,7 @@ def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json"
     optimizer = build_optimizer(deeponet.parameters(), problemdict["optimizer"])
     scheduler = build_scheduler(optimizer, problemdict["scheduler"])
     loss_fn = build_loss_fn(problemdict["loss_fn"])
+    num_epochs = problemdict["num_epochs"]
 
-    return deeponet, dataloader, optimizer, scheduler, loss_fn
+    return deeponet, dataloader, optimizer, scheduler, loss_fn, num_epochs
 

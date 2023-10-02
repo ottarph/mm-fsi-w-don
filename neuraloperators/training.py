@@ -78,7 +78,6 @@ class Context:
         directory = Path(directory)
         directory.mkdir(parents=True, exist_ok=True)
 
-        Path(directory / "model.txt").write_text(str(self.network))
         torch.save(self.network.state_dict(), directory / "state_dict.pt")
 
         return
