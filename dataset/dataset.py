@@ -8,10 +8,12 @@ from os import PathLike
 from pathlib import Path
 from typing import Iterable, Literal
 
+from typing import NewType, Any
+Mesh = NewType("Mesh", Any)
 
 class MeshData:
 
-    def __init__(self, mesh: df.Mesh, function_space: df.FunctionSpace, 
+    def __init__(self, mesh: Mesh, function_space: df.FunctionSpace, 
                  checkpoints: Iterable[int]):
         
         self.mesh = mesh
@@ -43,7 +45,7 @@ class MeshData:
         return self.boundary_dof_indices
     
     @property
-    def boundary_dof_coordinates(self) -> np.ndarray:
+    def boundary_dof_coordinates(self) -> torch.Tensor:
 
         if not hasattr(self, "boundary_dof_coordinate_array"):
             
@@ -62,7 +64,7 @@ class MeshData:
         return self.boundary_dof_coordinate_array
     
     @property
-    def dof_coordinates(self) -> np.ndarray:
+    def dof_coordinates(self) -> torch.Tensor:
 
         if not hasattr(self, "dof_coordinate_array"):
 
@@ -70,6 +72,40 @@ class MeshData:
             self.dof_coordinate_array = torch.tensor(V.tabulate_dof_coordinates())
 
         return self.dof_coordinate_array
+    
+    def create_mask_function(self, f: str | float = "2.0 * (x[0]+1.0) * (1-x[0]) * exp( -3.5*pow(x[0], 7) ) + 0.1",
+                             normalize: bool = True) -> torch.Tensor:
+
+        """
+            -Delta u = f in Omega
+                u = 0 on dOmega
+        """
+
+        V = df.FunctionSpace(self.mesh, "CG", self.function_space.ufl_element().degree())
+
+        def boundary(x, on_boundary):
+            return on_boundary
+        u0 = df.Constant(0.0)
+        
+        bc = df.DirichletBC(V, u0, boundary)
+
+        f_func = df.Expression(f, degree=5) if isinstance(f, str) else df.Constant(f)
+
+        u = df.TrialFunction(V)
+        v = df.TestFunction(V)
+
+        a = df.inner(df.nabla_grad(u), df.nabla_grad(v)) * df.dx
+        l = f_func * v * df.dx
+
+        uh = df.Function(V)
+        df.solve(a == l, uh, bc)
+        
+        if normalize:
+            uh.vector()[:] /= np.max(uh.vector()[:]) # Normalize mask to have sup-norm 1.
+
+        uh = torch.tensor(uh.vector().get_local(), dtype=torch.get_default_dtype())[:,None]
+
+        return uh
     
 
 class MeshDataXDMF(MeshData):
@@ -256,7 +292,8 @@ class OnBoundary(Module):
         super().__init__()
 
         self.data = data
-        self.indices = torch.tensor(data.boundary_dofs)
+        self.register_buffer("indices", torch.tensor(data.boundary_dofs))
+        self.indices: torch.Tensor
 
         return
     

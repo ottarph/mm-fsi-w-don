@@ -13,6 +13,7 @@
     },
     "width": 16,
     "final_bias": false,
+    "mask_function_f": "2.0 * (x[0]+1.0) * (1-x[0]) * exp( -3.5*pow(x[0], 7) ) + 0.1",
     "dataset": {
         "directory": "dataset/artificial_learnext",
         "style": "folders",

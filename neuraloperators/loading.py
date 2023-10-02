@@ -128,7 +128,8 @@ def build_scheduler(optimizer, scheduler_dict: dict) -> LR_Scheduler:
 
 def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json") \
     -> tuple[neuraloperators.deeponet.DeepONet, DataLoader, 
-             torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, int]:
+             torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, 
+             int, torch.Tensor]:
     
     import json
     problem_path = Path(problem_path)
@@ -136,11 +137,11 @@ def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json"
     with open(problem_path, "r") as infile:
         problemdict = json.loads(infile.read())
 
-    from dataset.dataset import load_MeshData, FEniCSDataset, OnBoundary, ToDType
+    from dataset.dataset import load_MeshData, FEniCSDataset, ToDType
     from torch.utils.data import DataLoader
     x_data, y_data = load_MeshData(problemdict["dataset"]["directory"], problemdict["dataset"]["style"])
     dataset = FEniCSDataset(x_data, y_data, 
-                    x_transform=nn.Sequential(OnBoundary(x_data), ToDType("default")),
+                    x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
     dataloader = DataLoader(dataset, batch_size=problemdict["dataset"]["batch_size"], shuffle=False)
 
@@ -164,5 +165,7 @@ def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json"
     loss_fn = build_loss_fn(problemdict["loss_fn"])
     num_epochs = problemdict["num_epochs"]
 
-    return deeponet, dataloader, optimizer, scheduler, loss_fn, num_epochs
+    mask_tensor = y_data.create_mask_function(problemdict["mask_function_f"])
+
+    return deeponet, dataloader, optimizer, scheduler, loss_fn, num_epochs, mask_tensor
 
