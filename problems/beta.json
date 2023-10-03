@@ -20,7 +20,7 @@
         "batch_size": 256
     },
     "loss_fn": {
-        "MSELoss": {
+        "L1Loss": {
         }
     },
     "optimizer": {

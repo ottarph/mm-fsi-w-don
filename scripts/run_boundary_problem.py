@@ -9,7 +9,7 @@ from neuraloperators.loading import load_deeponet_problem
 from neuraloperators.training import Context, train_with_dataloader
 from dataset.dataset import MeshData, OnBoundary
 
-def run_boundary_problem(problem_file: Path, results_dir: Path) -> None:
+def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: bool = False) -> None:
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -77,6 +77,14 @@ def run_boundary_problem(problem_file: Path, results_dir: Path) -> None:
     coords = x_data.dof_coordinates
     z0 = net(x0)
 
+
+    from tools.xdmf_io import pred_to_xdmf
+
+    pred_to_xdmf(net, dataloader.dataset, results_dir / "pred.xdmf", overwrite=xdmf_overwrite)
+    shutil.copy(results_dir / "pred.xdmf", latest_results_dir / "pred.xdmf")
+    shutil.copy(results_dir / "pred.xdmf", latest_results_dir / "pred.h5")
+
+
     import matplotlib.pyplot as plt
 
     input_x = coords.detach().numpy()
@@ -129,7 +137,7 @@ def main():
     else:
         results_dir.mkdir(parents=True)
 
-    run_boundary_problem(problem_file, results_dir)
+    run_boundary_problem(problem_file, results_dir, xdmf_overwrite=True)
 
     return
 
