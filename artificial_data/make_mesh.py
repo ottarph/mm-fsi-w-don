@@ -5,9 +5,13 @@ import numpy as np
 import gmsh
 
 
-def create_mesh():
+def create_mesh(verbosity: int | None = None):
     '''Mesh and entity function for the fluid & solid subdomain'''
     gmsh.initialize()
+
+    if verbosity is not None:
+        gmsh.option.setNumber("General.Verbosity", verbosity)
+
     # resolution
     resolution = 0.025  #0.05 #1 # 0.005 #0.1
 

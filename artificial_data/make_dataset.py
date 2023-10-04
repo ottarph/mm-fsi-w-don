@@ -4,6 +4,7 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 from os import PathLike
+from make_mesh import translate_function
 
 
 def convert_dataset(path: PathLike, harm_file: df.XDMFFile, biharm_file: df.XDMFFile,
@@ -13,6 +14,7 @@ def convert_dataset(path: PathLike, harm_file: df.XDMFFile, biharm_file: df.XDMF
     solid_boundaries = domain_info["solid_boundaries"]
     fluid_boundaries = domain_info["fluid_boundaries"]
     iface_tags = domain_info["iface_tags"]
+    zero_displacement_tags = domain_info["zero_displacement_tags"]
 
     CG2_solid = df.VectorFunctionSpace(solid_mesh, "CG", 2)
     CG2_fluid = df.VectorFunctionSpace(fluid_mesh, "CG", 2)
@@ -61,7 +63,7 @@ def convert_dataset(path: PathLike, harm_file: df.XDMFFile, biharm_file: df.XDMF
 
     solver_biharm = df.PETScLUSolver(A_biharm)
 
-    with df.XDMFFile(path) as infile:
+    with df.XDMFFile(str(path)) as infile:
 
         for k in tqdm(range(101), leave=False):
             infile.read_checkpoint(u_solid_cg2, "uh", k)
@@ -130,11 +132,10 @@ if __name__ == "__main__":
     domain_info = {
         "solid_boundaries": solid_boundaries,
         "fluid_boundaries": fluid_boundaries,
-        "iface_tags": iface_tags
+        "iface_tags": iface_tags,
+        "zero_displacement_tags": zero_displacement_tags
     }
 
-    # Represent the solid data on fluid mesh
-    from make_mesh import translate_function
 
     harmpath = Path("artificial_data/input.xdmf")
     biharmpath = Path("artificial_data/output.xdmf")

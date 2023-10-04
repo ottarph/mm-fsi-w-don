@@ -82,9 +82,10 @@ def convert_XDMF_dataset_to_folders(dataset_path: PathLike) -> None:
     with open(dataset_path / "info.json") as infile:
         dataset_info = loads(infile.read())
 
-
+    print("Converting input file:")
     convert_XDMF_to_folder(input_xdmf_path, input_folder_path, 
                            dataset_info["input"], dataset_info["num_checkpoints"])
+    print("Converting output file:")
     convert_XDMF_to_folder(output_xdmf_path, output_folder_path, 
                            dataset_info["output"], dataset_info["num_checkpoints"])
 
