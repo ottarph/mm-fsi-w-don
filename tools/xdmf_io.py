@@ -26,20 +26,21 @@ def pred_checkpoint_dolfin_to_dolfin(model: nn.Module, uh: df.Function,
     elif len(V.ufl_element().value_shape()) == 1:
         """ Vector element """
 
-        uh_np = uh.vector().get_local()
-        uh_reshape = np.zeros((uh_np.shape[0] // V.ufl_element().value_size(), *V.ufl_element().value_shape()))
+        with torch.no_grad():
+            uh_np = uh.vector().get_local()
+            uh_reshape = np.zeros((uh_np.shape[0] // V.ufl_element().value_size(), *V.ufl_element().value_shape()))
 
-        for d in range(uh_reshape.shape[1]):
-            uh_reshape[:,d] = uh_np[d::uh_reshape.shape[1]]
+            for d in range(uh_reshape.shape[1]):
+                uh_reshape[:,d] = uh_np[d::uh_reshape.shape[1]]
 
-        uh_torch = torch.tensor(uh_reshape, dtype=torch.get_default_dtype())
-        pred = model(uh_torch)
-        uh_reshape = pred.detach().numpy()
-        
-        for d in range(uh_reshape.shape[1]):
-            uh_np[d::uh_reshape.shape[1]] = uh_reshape[:,d]
+            uh_torch = torch.tensor(uh_reshape, dtype=torch.get_default_dtype())
+            pred = model(uh_torch)
+            uh_reshape = pred.detach().numpy()
+            
+            for d in range(uh_reshape.shape[1]):
+                uh_np[d::uh_reshape.shape[1]] = uh_reshape[:,d]
 
-        u_out.vector().set_local(uh_np)
+            u_out.vector().set_local(uh_np)
 
     else:
         """ Tensor element """
@@ -64,17 +65,18 @@ def pred_checkpoint_torch_to_dolfin(model: nn.Module, uh: torch.Tensor,
     elif len(V.ufl_element().value_shape()) == 1:
         """ Vector element """
         
-        assert len(uh.shape) == 3
+        with torch.no_grad():
+            assert len(uh.shape) == 3
 
-        uh_np = u_out.vector().get_local()
+            uh_np = u_out.vector().get_local()
 
-        pred = model(uh)
-        uh_reshape = pred.detach().numpy()
-        
-        for d in range(uh_reshape.shape[2]):
-            uh_np[d::uh_reshape.shape[2]] = uh_reshape[0,:,d]
+            pred = model(uh)
+            uh_reshape = pred.detach().numpy()
+            
+            for d in range(uh_reshape.shape[2]):
+                uh_np[d::uh_reshape.shape[2]] = uh_reshape[0,:,d]
 
-        u_out.vector().set_local(uh_np)
+            u_out.vector().set_local(uh_np)
 
     else:
         """ Tensor element """
