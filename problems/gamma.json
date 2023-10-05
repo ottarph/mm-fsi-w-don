@@ -34,5 +34,6 @@
             "factor": 0.5
         }
     },
-    "num_epochs": 400
+    "num_epochs": 1000,
+    "seed": 0
 }

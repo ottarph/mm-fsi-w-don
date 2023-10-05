@@ -13,17 +13,22 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    deeponet, dataloader, optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem(problem_file)
-    
-    x_data: MeshData =  dataloader.dataset.x_data
-    y_data: MeshData =  dataloader.dataset.y_data
+    deeponet, train_dataloader, val_dataloader, dataset, \
+    optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem(problem_file)
+
+    x_data: MeshData =  dataset.x_data
+    y_data: MeshData =  dataset.y_data
 
     evaluation_points = y_data.dof_coordinates[None,...].to(dtype=torch.get_default_dtype())
     boundary_filter = OnBoundary(x_data)
 
-    x0, y0 = next(iter(dataloader))
+    from neuraloperators.cost_functions import DataInformedLoss
+    x0, y0 = next(iter(train_dataloader))
     z0 = x0 + deeponet(boundary_filter(x0), evaluation_points) * mask_tensor
-    loss0 = loss_fn(z0, y0)
+    if isinstance(loss_fn, DataInformedLoss):
+        loss0 = loss_fn(x0, y0, z0)
+    else:
+        loss0 = loss_fn(z0, y0)
 
 
     from neuraloperators.deeponet import DeepONet
@@ -55,7 +60,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
 
     context = Context(net, loss_fn, optimizer, scheduler)
 
-    train_with_dataloader(context, dataloader, num_epochs, device, val_dataloader=dataloader)
+    train_with_dataloader(context, train_dataloader, num_epochs, device, val_dataloader=val_dataloader)
 
     context.save_results(results_dir)
     context.save_summary(results_dir)
@@ -72,7 +77,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
 
 
     net.to("cpu")
-    x0, y0 = next(iter(dataloader))
+    x0, y0 = next(iter(train_dataloader))
     x0, y0 = x0[[0],...], y0[[0],...]
     coords = x_data.dof_coordinates
     z0 = net(x0)
@@ -80,7 +85,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
 
     from tools.xdmf_io import pred_to_xdmf
 
-    pred_to_xdmf(net, dataloader.dataset, results_dir / "pred", overwrite=xdmf_overwrite)
+    pred_to_xdmf(net, dataset, results_dir / "pred", overwrite=xdmf_overwrite)
     shutil.copy(results_dir / "pred.xdmf", latest_results_dir / "pred.xdmf")
     shutil.copy(results_dir / "pred.h5", latest_results_dir / "pred.h5")
 

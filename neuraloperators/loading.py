@@ -7,7 +7,7 @@ import neuraloperators.mlp
 import neuraloperators.deeponet
 from typing import Literal
 from os import PathLike
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset, random_split
 
 class ModelBuilder:
 
@@ -65,6 +65,7 @@ def load_model(model_dir: PathLike, load_state_dict: bool = True,
     return model
 
 
+from neuraloperators.cost_functions import RelativeMSELoss
 class LossBuilder:
 
     def MSELoss(mseloss_dict: dict) -> nn.MSELoss:
@@ -72,6 +73,9 @@ class LossBuilder:
     
     def L1Loss(l1loss_dict: dict) -> nn.L1Loss:
         return nn.L1Loss(**l1loss_dict)
+    
+    def RelativeMSELoss(rel_mseloss_dict: dict) -> RelativeMSELoss:
+        return RelativeMSELoss(**rel_mseloss_dict)
     
 def build_loss_fn(loss_dict: dict) -> nn.modules.loss._Loss:
 
@@ -127,7 +131,7 @@ def build_scheduler(optimizer, scheduler_dict: dict) -> LR_Scheduler:
 
 
 def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json") \
-    -> tuple[neuraloperators.deeponet.DeepONet, DataLoader, 
+    -> tuple[neuraloperators.deeponet.DeepONet, DataLoader, DataLoader, Dataset,
              torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, 
              int, torch.Tensor]:
     
@@ -137,13 +141,24 @@ def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json"
     with open(problem_path, "r") as infile:
         problemdict = json.loads(infile.read())
 
+    if "seed" in problemdict.keys():
+        torch.manual_seed(problemdict["seed"])
+
     from dataset.dataset import load_MeshData, FEniCSDataset, ToDType
     from torch.utils.data import DataLoader
     x_data, y_data = load_MeshData(problemdict["dataset"]["directory"], problemdict["dataset"]["style"])
     dataset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
-    dataloader = DataLoader(dataset, batch_size=problemdict["dataset"]["batch_size"], shuffle=False)
+    # dataloader = DataLoader(dataset, batch_size=problemdict["dataset"]["batch_size"], shuffle=False)
+    if "train_val_split" in problemdict["dataset"].keys():
+        train_dataset, val_dataset = random_split(dataset, problemdict["dataset"]["train_val_split"])
+        train_dataloader = DataLoader(train_dataset, batch_size=problemdict["dataset"]["batch_size"])
+        val_dataloader = DataLoader(val_dataset, batch_size=problemdict["dataset"]["batch_size"])
+    else:
+        train_dataset, val_dataset = dataset, dataset
+        train_dataloader = DataLoader(train_dataset, batch_size=problemdict["dataset"]["batch_size"])
+        val_dataloader = DataLoader(val_dataset, batch_size=problemdict["dataset"]["batch_size"])
 
     sensors = x_data.boundary_dof_coordinates
 
@@ -167,5 +182,5 @@ def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json"
 
     mask_tensor = y_data.create_mask_function(problemdict["mask_function_f"])
 
-    return deeponet, dataloader, optimizer, scheduler, loss_fn, num_epochs, mask_tensor
+    return deeponet, train_dataloader, val_dataloader, dataset, optimizer, scheduler, loss_fn, num_epochs, mask_tensor
 

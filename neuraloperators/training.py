@@ -149,7 +149,7 @@ class Context:
 
         return fig
 
-
+from neuraloperators.cost_functions import DataInformedLoss
 def train_with_dataloader(context: Context, train_dataloader: DataLoader, 
                           num_epochs: int, device: Literal["cuda", "cpu"],
                           val_dataloader: DataLoader | None = None, 
@@ -179,6 +179,12 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
                 loss = cost_function(network(x), y)
                 loss.backward()
                 return loss
+            if isinstance(cost_function, DataInformedLoss):
+                def closure():
+                    optimizer.zero_grad()
+                    loss = cost_function(x, y, network(x))
+                    loss.backward()
+                    return loss
             
             loss = optimizer.step(closure)
             epoch_loss += loss.item()
@@ -196,7 +202,10 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
             with torch.no_grad():
                 for x, y in val_dataloader_loop:
                     x, y = x.to(device), y.to(device)
-                    val_loss += cost_function(network(x), y).item()
+                    if isinstance(cost_function, DataInformedLoss):
+                        val_loss += cost_function(x, y, network(x)).item()
+                    else:
+                        val_loss += cost_function(network(x), y).item()
             context.val_hist.append(val_loss)
             network.train()
 
