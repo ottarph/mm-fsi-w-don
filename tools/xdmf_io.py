@@ -88,22 +88,23 @@ def pred_checkpoint_torch_to_dolfin(model: nn.Module, uh: torch.Tensor,
 def pred_to_xdmf(model: nn.Module, dataset: FEniCSDataset, output_path: PathLike,
                  overwrite: bool = False) -> None:
     output_path = Path(output_path)
+    assert output_path.suffix == "", "output_path argument should not include any suffix."
 
-    if output_path.exists():
-        if overwrite:
-            output_path.unlink()
-        else:
-            print("File found at output path.")
+    files_to_overwrite = list(filter(lambda p: p.exists(), [output_path.with_suffix(".xdmf"), output_path.with_suffix(".h5")]))
+    if len(files_to_overwrite) > 0:
+        if not overwrite:
+            print(f"File found at {map(str, files_to_overwrite)}. ")
             if not input("Overwrite? (y/n): ").lower() == "y":
                 print("Exiting program.")
                 quit()
-            output_path.unlink()
+        for path in files_to_overwrite:
+            path.unlink()
 
 
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
     V = dataset.x_data.function_space
 
-    output_xdmf = df.XDMFFile(str(output_path))
+    output_xdmf = df.XDMFFile(str(output_path.with_suffix(".xdmf")))
     output_xdmf.write(V.mesh())
 
     for k, (x, _) in enumerate(tqdm(dataloader)):
