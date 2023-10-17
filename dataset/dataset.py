@@ -25,53 +25,48 @@ class MeshData:
     def __len__(self) -> int:
         return len(self.checkpoints)
 
+    def _create_boundary_dof_data(self) -> None:
+
+        V = df.FunctionSpace(self.mesh, "CG", self.function_space.ufl_element().degree())
+        u = df.Function(V)
+        bc = df.DirichletBC(V, df.Constant(1), "on_boundary")
+
+        u.vector()[:] = 0.0
+        bc.apply(u.vector())
+
+        ids = np.flatnonzero(u.vector().get_local())
+
+        self._boundary_dof_indices = torch.tensor(ids)
+        self._boundary_dof_coordinate_array = torch.tensor(V.tabulate_dof_coordinates()[ids])
+
+        return
+    
     @property
-    def boundary_dofs(self) -> np.ndarray:
+    def boundary_dofs(self) -> torch.LongTensor:
 
-        if not hasattr(self, "boundary_dof_indices"):
-
-            V = df.FunctionSpace(self.mesh, "CG", self.function_space.ufl_element().degree())
-            u = df.Function(V)
-            bc = df.DirichletBC(V, df.Constant(1), "on_boundary")
-
-            u.vector()[:] = 0.0
-            bc.apply(u.vector())
-
-            ids = np.flatnonzero(u.vector().get_local()).astype(np.int32)
-
-            self.boundary_dof_indices = ids
-            self.boundary_dof_coordinate_array = torch.tensor(V.tabulate_dof_coordinates()[ids])
-
-        return self.boundary_dof_indices
+        if not hasattr(self, "_boundary_dof_indices"):
+            self._create_boundary_dof_data()
+            
+        return self._boundary_dof_indices
     
     @property
     def boundary_dof_coordinates(self) -> torch.Tensor:
 
-        if not hasattr(self, "boundary_dof_coordinate_array"):
+        if not hasattr(self, "_boundary_dof_coordinate_array"):
             
-            V = df.FunctionSpace(self.mesh, "CG", self.function_space.ufl_element().degree())
-            u = df.Function(V)
-            bc = df.DirichletBC(V, df.Constant(1), "on_boundary")
+            self._create_boundary_dof_data()
 
-            u.vector()[:] = 0.0
-            bc.apply(u.vector())
-
-            ids = np.flatnonzero(u.vector().get_local()).astype(np.int32)
-
-            self.boundary_dof_indices = ids
-            self.boundary_dof_coordinate_array = torch.tensor(V.tabulate_dof_coordinates()[ids])
-
-        return self.boundary_dof_coordinate_array
+        return self._boundary_dof_coordinate_array
     
     @property
     def dof_coordinates(self) -> torch.Tensor:
 
-        if not hasattr(self, "dof_coordinate_array"):
+        if not hasattr(self, "_dof_coordinate_array"):
 
             V = df.FunctionSpace(self.mesh, "CG", self.function_space.ufl_element().degree())
-            self.dof_coordinate_array = torch.tensor(V.tabulate_dof_coordinates())
+            self._dof_coordinate_array = torch.tensor(V.tabulate_dof_coordinates())
 
-        return self.dof_coordinate_array
+        return self._dof_coordinate_array
     
     def create_mask_function(self, f: str | float = "2.0 * (x[0]+1.0) * (1-x[0]) * exp( -3.5*pow(x[0], 7) ) + 0.1",
                              normalize: bool = True) -> torch.Tensor:
@@ -292,7 +287,7 @@ class OnBoundary(Module):
         super().__init__()
 
         self.data = data
-        self.register_buffer("indices", torch.tensor(data.boundary_dofs))
+        self.register_buffer("indices", data.boundary_dofs)
         self.indices: torch.Tensor
 
         return
