@@ -16,8 +16,8 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
     deeponet, train_dataloader, val_dataloader, dataset, \
     optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem(problem_file)
 
-    x_data: MeshData =  dataset.x_data
-    y_data: MeshData =  dataset.y_data
+    x_data: MeshData = dataset.x_data
+    y_data: MeshData = dataset.y_data
 
     evaluation_points = y_data.dof_coordinates[None,...].to(dtype=torch.get_default_dtype())
     boundary_filter = OnBoundary(x_data)
@@ -34,11 +34,11 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
     from neuraloperators.deeponet import DeepONet
     class EvalWrapper(nn.Module):
         def __init__(self, deeponet: DeepONet, evaluation_points: torch.Tensor,
-                     boundary_filter: OnBoundary, mask_tensor: torch.Tensor):
+                     sensor_transform: nn.Module, mask_tensor: torch.Tensor):
             super().__init__()
 
             self.deeponet = deeponet
-            self.boundary_filter = boundary_filter
+            self.sensor_transform = sensor_transform
 
             if len(mask_tensor.shape) == 1:
                 mask_tensor = mask_tensor[:,None]
@@ -53,9 +53,11 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
             return
         
         def forward(self, x: torch.Tensor) -> torch.Tensor:
-            return x + self.deeponet(self.boundary_filter(x), self.evaluation_points) * self.mask_tensor
+            return x + self.deeponet(self.sensor_transform(x), self.evaluation_points) * self.mask_tensor
 
-    net = EvalWrapper(deeponet, evaluation_points, boundary_filter, mask_tensor)
+    sensor_transform = nn.Sequential(boundary_filter)
+    
+    net = EvalWrapper(deeponet, evaluation_points, sensor_transform, mask_tensor)
     net.to(device)
 
     context = Context(net, loss_fn, optimizer, scheduler)
