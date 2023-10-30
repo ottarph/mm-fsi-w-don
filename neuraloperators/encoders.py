@@ -21,7 +21,23 @@ class SequentialEncoder(Encoder):
 
         return self.encoders(x)
 
+class FlattenEncoder(Encoder):
+    def __init__(self, start_dim: int):
+        """
+
+        """
+        super().__init__()
+
+        self.register_buffer("start_dim", torch.tensor(start_dim, dtype=torch.long))
+        self.start_dim: torch.LongTensor
+
+        return
     
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+
+        return torch.flatten(x, start_dim=self.start_dim)
+    
+
 class TensorPrependEncoder(Encoder):
     """ Inserts `tensor` before `x` in the last dimension. """
     

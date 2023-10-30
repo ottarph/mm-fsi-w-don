@@ -67,7 +67,32 @@ def test_combined_encoders():
     return
 
 
+def test_flatten_encoder():
+
+    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    dataset = FEniCSDataset(x_data, y_data, 
+                    x_transform=ToDType("default"),
+                    y_transform=ToDType("default"))
+    dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
+
+    x0, _ = next(iter(dataloader))
+
+    flat_encoder = FlattenEncoder(1)
+    assert flat_encoder(x0).shape == (x0.shape[0], x0.shape[1]*x0.shape[2])
+
+    coordinate_insert_encoder = CoordinateInsertEncoder(x_data) # Insert coordinates, (batch, num_vert, 2) -> (batch, num_vert, 4)
+    boundary_filter_encoder = BoundaryFilterEncoder(x_data) # Select only boundary vertices, (batch, num_vert, 4) -> (batch, num_bound_vert, 4)
+    rand_select_encoder = RandomSelectEncoder(-2, 20) # Select 20 vertices at random, (batch, num_bound_vert, 4) -> (batch, 20, 4)
+    flat_encoder = FlattenEncoder(1) # Flatten tensor starting at second dimension, (batch, 20, 4) -> (batch, 20*4=80)
+    encoder = SequentialEncoder(coordinate_insert_encoder, boundary_filter_encoder, rand_select_encoder, flat_encoder)
+
+    assert encoder(x0).shape == (x0.shape[0], 20*4)
+
+    return
+
+
 if __name__ == "__main__":
     test_coordinate_insert()
     test_filter_encoders()
     test_combined_encoders()
+    test_flatten_encoder()
