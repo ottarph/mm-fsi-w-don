@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 
 import neuraloperators.mlp
-import neuraloperators.deeponet
+import neuraloperators.old_deeponet
 import neuraloperators.deeponet2
 import neuraloperators.encoders
 
@@ -165,7 +165,7 @@ def build_encoder(mesh_data: dataset.dataset.MeshData, encoder_dict: dict) -> ne
 
 
 def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json") \
-    -> tuple[neuraloperators.deeponet.DeepONet, DataLoader, DataLoader, Dataset,
+    -> tuple[neuraloperators.old_deeponet.DeepONet, DataLoader, DataLoader, Dataset,
              torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, 
              int, torch.Tensor]:
     
@@ -201,12 +201,12 @@ def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json"
     branch_net = build_model(problemdict["branch"])
     trunk_net = build_model(problemdict["trunk"])
 
-    from neuraloperators.deeponet import BranchNetwork, TrunkNetwork, DeepONet
+    from neuraloperators.old_deeponet import BranchNetwork, TrunkNetwork, DeepONet
     branch = BranchNetwork(branch_net, sensors, 2, 2, 2, 2, problemdict["width"])
     trunk = TrunkNetwork(trunk_net, 2, 2, 2, 2, problemdict["width"])
 
 
-    from neuraloperators.deeponet import DeepONet
+    from neuraloperators.old_deeponet import DeepONet
     deeponet = DeepONet(branch, trunk, sensors, problemdict["final_bias"])
 
     optimizer = build_optimizer(deeponet.parameters(), problemdict["optimizer"])

@@ -31,7 +31,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
         loss0 = loss_fn(z0, y0)
 
 
-    from neuraloperators.deeponet import DeepONet
+    from neuraloperators.old_deeponet import DeepONet
     class EvalWrapper(nn.Module):
         def __init__(self, deeponet: DeepONet, evaluation_points: torch.Tensor,
                      sensor_transform: nn.Module, mask_tensor: torch.Tensor):
