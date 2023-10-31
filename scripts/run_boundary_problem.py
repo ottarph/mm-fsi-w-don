@@ -5,7 +5,7 @@ import numpy as np
 import shutil
 
 from pathlib import Path
-from neuraloperators.loading import load_deeponet_problem2
+from neuraloperators.loading import load_deeponet_problem
 from neuraloperators.training import Context, train_with_dataloader
 from dataset.dataset import MeshData
 
@@ -14,7 +14,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     deeponet, train_dataloader, val_dataloader, dataset, \
-    optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem2(problem_file)
+    optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem(problem_file)
 
     x_data: MeshData = dataset.x_data
     y_data: MeshData = dataset.y_data
@@ -91,7 +91,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--problem-file", default=Path("problems/default2.json"), type=Path)
+    parser.add_argument("--problem-file", default=Path("problems/default.json"), type=Path)
     parser.add_argument("--results-dir", default=Path("results/default"), type=Path)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()

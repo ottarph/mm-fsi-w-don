@@ -162,7 +162,7 @@ def build_encoder(mesh_data: dataset.dataset.MeshData, encoder_dict: dict) -> ne
     return encoder
 
 
-def load_deeponet_problem2(problem_path: PathLike) \
+def load_deeponet_problem(problem_path: PathLike) \
     -> tuple[neuraloperators.deeponet.DeepONet, DataLoader, DataLoader, dataset.dataset.FEniCSDataset,
              torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, 
              int, torch.Tensor]:
@@ -226,7 +226,7 @@ if __name__ == "__main__":
 
     path = Path("problems/default.json")
 
-    deeponet, train_dataloader, val_dataloader, dset, optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem2(path)
+    deeponet, train_dataloader, val_dataloader, dset, optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem(path)
 
     print(deeponet)
     uh, _ = next(iter(train_dataloader))
