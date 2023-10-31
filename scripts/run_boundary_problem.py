@@ -60,15 +60,17 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
 
     train_with_dataloader(context, train_dataloader, num_epochs, device, val_dataloader=val_dataloader)
 
-    context.save_results(results_dir)
-    context.save_summary(results_dir)
+    results_data_dir = results_dir / "data"
+    context.save_results(results_data_dir)
+    context.save_summary(results_data_dir)
     context.plot_results(results_dir)
     context.save_model(results_dir)
     shutil.copy(problem_file, results_dir / "problem.json")
 
     latest_results_dir = Path("results/latest")
-    context.save_results(latest_results_dir)
-    context.save_summary(latest_results_dir)
+    latest_results_data_dir = latest_results_dir / "data"
+    context.save_results(latest_results_data_dir)
+    context.save_summary(latest_results_data_dir)
     context.plot_results(latest_results_dir)
     context.save_model(latest_results_dir)
     shutil.copy(problem_file, latest_results_dir / "problem.json")
