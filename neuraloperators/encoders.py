@@ -20,6 +20,14 @@ class SequentialEncoder(Encoder):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         return self.encoders(x)
+    
+class IdentityEncoder(Encoder):
+    def __init__(self):
+        super().__init__()
+        self.identity = nn.Identity()
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.identity(x)
 
 class FlattenEncoder(Encoder):
     def __init__(self, start_dim: int):
@@ -36,6 +44,9 @@ class FlattenEncoder(Encoder):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         return torch.flatten(x, start_dim=self.start_dim)
+    
+    def __repr__(self) -> str:
+        return f"FlattenEncoder(start_dim={self.start_dim.item()})"
     
 
 class TensorPrependEncoder(Encoder):
@@ -115,6 +126,9 @@ class RandomPermuteEncoder(FilterEncoder):
     def filter(self, x: torch.Tensor) -> torch.LongTensor:
         return torch.randperm(x.shape[self.dim], device=x.device)
     
+    def __repr__(self) -> str:
+        return f"RandomPermuteEncoder(dim={self.dim.item()})"
+    
     
 class RandomSelectEncoder(FilterEncoder):
 
@@ -127,66 +141,7 @@ class RandomSelectEncoder(FilterEncoder):
 
     def filter(self, x: torch.Tensor) -> torch.LongTensor:
         return torch.randperm(x.shape[self.dim], device=x.device)[:self.num_inds]
-
-
-class EncoderBuilder:
-
-    def SequentialEncoder(encoder_dicts: list[dict]) -> SequentialEncoder:
-        return SequentialEncoder(*(build_encoder(enc_dict) for enc_dict in encoder_dicts))
     
-    def CoordinateInsertEncoder(coord_enc_dict: dict) -> CoordinateInsertEncoder:
-        """
-            ```
-                coord_enc_dict = {"dataset_path": path/to/dataset_dir, "side": "input" / "output"}
-            ```
-        """
-        from dataset.dataset import load_MeshData
-        x_mesh_data, y_mesh_data = load_MeshData(coord_enc_dict["dataset_path"], style="XDMF")
-
-        if coord_enc_dict["side"] == "input":
-            mesh_data = x_mesh_data
-        elif coord_enc_dict["side"] == "output":
-            mesh_data = y_mesh_data
-        else:
-            raise ValueError()
-
-        return CoordinateInsertEncoder(mesh_data)
-    
-    def BoundaryFilterEncoder(bound_filt_dict: dict) -> BoundaryFilterEncoder:
-        """
-            ```
-                coord_enc_dict = {"dataset_path": path/to/dataset_dir, "side": "input" / "output"}
-            ```
-        """
-        from dataset.dataset import load_MeshData
-        x_mesh_data, y_mesh_data = load_MeshData(bound_filt_dict["dataset_path"], style="XDMF")
-
-        if bound_filt_dict["side"] == "input":
-            mesh_data = x_mesh_data
-        elif bound_filt_dict["side"] == "output":
-            mesh_data = y_mesh_data
-        else:
-            raise ValueError()
-
-        return BoundaryFilterEncoder(mesh_data)
-    
-    def RandomPermuteEncoder(rand_perm_dict: dict) -> RandomPermuteEncoder:
-        assert isinstance(rand_perm_dict["dim"], int) and rand_perm_dict["dim"] >= 0
-        return RandomPermuteEncoder(rand_perm_dict["dim"])
-    
-    def RandomSelectEncoder(rand_sel_dict: dict) -> RandomSelectEncoder:
-        assert isinstance(rand_sel_dict["dim"], int) and rand_sel_dict["dim"] >= 0
-        assert isinstance(rand_sel_dict["num_inds"], int) and rand_sel_dict["num_inds"] > 0
-        return RandomPermuteEncoder(rand_sel_dict["dim"])
-
-
-def build_encoder(encoder_dict: dict) -> Encoder:
-
-    assert len(encoder_dict.keys()) == 1
-    key = next(iter(encoder_dict.keys()))
-    val = encoder_dict[key]
-
-    encoder: nn.Module = getattr(EncoderBuilder, key)(val)
-
-    return encoder
+    def __repr__(self) -> str:
+        return f"RandomSelectEncoder(dim={self.dim.item()}, num_inds={self.num_inds.item})"
 
