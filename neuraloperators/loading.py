@@ -5,7 +5,7 @@ import json
 
 import neuraloperators.mlp
 import neuraloperators.old_deeponet
-import neuraloperators.deeponet2
+import neuraloperators.deeponet
 import neuraloperators.encoders
 
 import dataset.dataset
@@ -220,7 +220,7 @@ def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json"
 
 
 def load_deeponet_problem2(problem_path: PathLike) \
-    -> tuple[neuraloperators.deeponet2.DeepONet, DataLoader, DataLoader, dataset.dataset.FEniCSDataset,
+    -> tuple[neuraloperators.deeponet.DeepONet, DataLoader, DataLoader, dataset.dataset.FEniCSDataset,
              torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, 
              int, torch.Tensor]:
     
@@ -261,7 +261,7 @@ def load_deeponet_problem2(problem_path: PathLike) \
     else:
         raise NotImplementedError
 
-    from neuraloperators.deeponet2 import DeepONet
+    from neuraloperators.deeponet import DeepONet
     deeponet = DeepONet(branch_encoder, branch_net, trunk_encoder, trunk_net, 
                         x_data.function_space.ufl_element().value_shape()[0], # This will probably fail if trying to use scalar function spaces.
                         y_data.function_space.ufl_element().value_shape()[0], # This will probably fail if trying to use scalar function spaces.

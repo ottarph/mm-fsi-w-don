@@ -30,7 +30,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path, xdmf_overwrite: 
         loss_fn(z0, y0)
 
 
-    from neuraloperators.deeponet2 import DeepONet
+    from neuraloperators.deeponet import DeepONet
     class EvalWrapper(nn.Module):
         def __init__(self, deeponet: DeepONet, evaluation_points: torch.Tensor, mask_tensor: torch.Tensor):
             super().__init__()
