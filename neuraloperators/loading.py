@@ -5,6 +5,11 @@ import json
 
 import neuraloperators.mlp
 import neuraloperators.deeponet
+import neuraloperators.deeponet2
+import neuraloperators.encoders
+
+import dataset.dataset
+
 from typing import Literal
 from os import PathLike
 from torch.utils.data import DataLoader, Dataset, random_split
@@ -28,11 +33,6 @@ class ModelBuilder:
 
         return nn.Sequential(*(build_model(model_dict)
                                 for model_dict in model_dicts))
-    
-    def DeepONet(deeponet_dict: dict) -> neuraloperators.deeponet.DeepONet:
-
-        raise NotImplementedError()
-
 
 
 def build_model(model_dict: dict) -> nn.Module:
@@ -130,6 +130,40 @@ def build_scheduler(optimizer, scheduler_dict: dict) -> LR_Scheduler:
     return scheduler
 
 
+class EncoderBuilder:
+
+    
+    def CoordinateInsertEncoder(mesh_data: dataset.dataset.MeshData, coord_insert_dict: dict) -> neuraloperators.encoders.CoordinateInsertEncoder:
+        return neuraloperators.encoders.CoordinateInsertEncoder(mesh_data=mesh_data, **coord_insert_dict)
+    
+    def BoundaryFilterEncoder(mesh_data: dataset.dataset.MeshData, boundary_filter_dict: dict) -> neuraloperators.encoders.BoundaryFilterEncoder:
+        return neuraloperators.encoders.BoundaryFilterEncoder(mesh_data=mesh_data, **boundary_filter_dict)
+
+    def RandomSelectEncoder(mesh_data: dataset.dataset.MeshData, rand_select_dict: dict) -> neuraloperators.encoders.RandomSelectEncoder:
+        return neuraloperators.encoders.RandomSelectEncoder(**rand_select_dict)
+
+    def FlattenEncoder(mesh_data: dataset.dataset.MeshData, flatten_dict: dict) -> neuraloperators.encoders.FlattenEncoder:
+        return  neuraloperators.encoders.FlattenEncoder(**flatten_dict)
+
+    def SequentialEncoder(mesh_data: dataset.dataset.MeshData, encoder_dicts: list[dict]) -> neuraloperators.encoders.SequentialEncoder:
+        return neuraloperators.encoders.SequentialEncoder(*(build_encoder(mesh_data, encoder_dict) for encoder_dict in encoder_dicts))
+
+    def IdentityEncoder(mesh_data: dataset.dataset.MeshData, ident_dict: dict) -> neuraloperators.encoders.IdentityEncoder:
+        return neuraloperators.encoders.IdentityEncoder(**ident_dict)
+
+
+def build_encoder(mesh_data: dataset.dataset.MeshData, encoder_dict: dict) -> neuraloperators.encoders.Encoder:
+
+    assert len(encoder_dict.keys()) == 1
+    key = next(iter(encoder_dict.keys()))
+    val = encoder_dict[key]
+
+    encoder: neuraloperators.encoders.Encoder = getattr(EncoderBuilder, key)(mesh_data, val)
+
+    return encoder
+
+
+
 def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json") \
     -> tuple[neuraloperators.deeponet.DeepONet, DataLoader, DataLoader, Dataset,
              torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, 
@@ -147,16 +181,16 @@ def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json"
     from dataset.dataset import load_MeshData, FEniCSDataset, ToDType
     from torch.utils.data import DataLoader
     x_data, y_data = load_MeshData(problemdict["dataset"]["directory"], problemdict["dataset"]["style"])
-    dataset = FEniCSDataset(x_data, y_data, 
+    dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
-    # dataloader = DataLoader(dataset, batch_size=problemdict["dataset"]["batch_size"], shuffle=False)
+    # dataloader = DataLoader(dset, batch_size=problemdict["dataset"]["batch_size"], shuffle=False)
     if "train_val_split" in problemdict["dataset"].keys():
-        train_dataset, val_dataset = random_split(dataset, problemdict["dataset"]["train_val_split"])
+        train_dataset, val_dataset = random_split(dset, problemdict["dataset"]["train_val_split"])
         train_dataloader = DataLoader(train_dataset, batch_size=problemdict["dataset"]["batch_size"])
         val_dataloader = DataLoader(val_dataset, batch_size=problemdict["dataset"]["batch_size"])
     else:
-        train_dataset, val_dataset = dataset, dataset
+        train_dataset, val_dataset = dset, dset
         train_dataloader = DataLoader(train_dataset, batch_size=problemdict["dataset"]["batch_size"])
         val_dataloader = DataLoader(val_dataset, batch_size=problemdict["dataset"]["batch_size"])
 
@@ -182,5 +216,80 @@ def load_deeponet_problem(problem_path: PathLike, mode: Literal["json"] = "json"
 
     mask_tensor = y_data.create_mask_function(problemdict["mask_function_f"])
 
-    return deeponet, train_dataloader, val_dataloader, dataset, optimizer, scheduler, loss_fn, num_epochs, mask_tensor
+    return deeponet, train_dataloader, val_dataloader, dset, optimizer, scheduler, loss_fn, num_epochs, mask_tensor
+
+
+def load_deeponet_problem2(problem_path: PathLike) \
+    -> tuple[neuraloperators.deeponet2.DeepONet, DataLoader, DataLoader, dataset.dataset.FEniCSDataset,
+             torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, 
+             int, torch.Tensor]:
+    
+    import json
+    problem_path = Path(problem_path)
+    
+    with open(problem_path, "r") as infile:
+        problemdict = json.loads(infile.read())
+
+    if "seed" in problemdict.keys():
+        torch.manual_seed(problemdict["seed"])
+
+    from dataset.dataset import load_MeshData, FEniCSDataset, ToDType
+    from torch.utils.data import DataLoader
+    x_data, y_data = load_MeshData(problemdict["dataset"]["directory"], problemdict["dataset"]["style"])
+    dset = FEniCSDataset(x_data, y_data, 
+                    x_transform=ToDType("default"),
+                    y_transform=ToDType("default"))
+    if "train_val_split" in problemdict["dataset"].keys():
+        train_dataset, val_dataset = random_split(dset, problemdict["dataset"]["train_val_split"])
+        train_dataloader = DataLoader(train_dataset, batch_size=problemdict["dataset"]["batch_size"])
+        val_dataloader = DataLoader(val_dataset, batch_size=problemdict["dataset"]["batch_size"])
+    else:
+        train_dataset, val_dataset = dset, dset
+        train_dataloader = DataLoader(train_dataset, batch_size=problemdict["dataset"]["batch_size"])
+        val_dataloader = DataLoader(val_dataset, batch_size=problemdict["dataset"]["batch_size"])
+
+    sensors = x_data.dof_coordinates
+
+    branch_net = build_model(problemdict["branch"])
+    trunk_net = build_model(problemdict["trunk"])
+
+    branch_encoder = build_encoder(x_data, problemdict["branch_encoder"])
+    trunk_encoder = build_encoder(y_data, problemdict["trunk_encoder"])
+
+    if problemdict["final_bias"] == False:
+        final_bias = None
+    else:
+        raise NotImplementedError
+
+    from neuraloperators.deeponet2 import DeepONet
+    deeponet = DeepONet(branch_encoder, branch_net, trunk_encoder, trunk_net, 
+                        x_data.function_space.ufl_element().value_shape()[0], # This will probably fail if trying to use scalar function spaces.
+                        y_data.function_space.ufl_element().value_shape()[0], # This will probably fail if trying to use scalar function spaces.
+                        final_bias=final_bias, combine_style=problemdict["combine_style"],
+                        sensors=sensors)
+
+    optimizer = build_optimizer(deeponet.parameters(), problemdict["optimizer"])
+    scheduler = build_scheduler(optimizer, problemdict["scheduler"])
+    loss_fn = build_loss_fn(problemdict["loss_fn"])
+    num_epochs = problemdict["num_epochs"]
+
+    mask_tensor = y_data.create_mask_function(problemdict["mask_function_f"])
+
+    return deeponet, train_dataloader, val_dataloader, dset, optimizer, scheduler, loss_fn, num_epochs, mask_tensor
+
+
+
+if __name__ == "__main__":
+
+    path = Path("problems/default2.json")
+
+    deeponet, train_dataloader, val_dataloader, dset, optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem2(path)
+
+    print(deeponet)
+    uh, _ = next(iter(train_dataloader))
+    print(f"{uh.shape = }")
+    print(f"{deeponet.branch_encoder(uh).shape = }")
+    y = dset.y_data.dof_coordinates[None,...].to(dtype=torch.get_default_dtype())
+    print(f"{deeponet(uh, y).shape = }")
+    print(f"{(uh + deeponet(uh, y) * mask_tensor).shape = }")
 
