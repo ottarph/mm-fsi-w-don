@@ -41,8 +41,7 @@ def test_deepset_perm_invariant():
     bs = 20
     vs = 2000000
     x0 = torch.rand((vs, 2))
-
-    x = torch.stack([x0[torch.randperm(x0.shape[-2])] for _ in range(bs)])
+    x = torch.stack([x0[torch.randperm(x0.shape[-2]),:] for _ in range(bs)])
 
     x = x.to(device)
     deepset.to(device)
@@ -51,9 +50,6 @@ def test_deepset_perm_invariant():
     assert z.shape == (bs, 4)
 
     eps = 1e-14
-    # print(f"{torch.norm(z - z[0,:], dim=-1) = }")
-    # print(f"{torch.finfo(torch.float32) = }")
-    # print(f"{torch.finfo(torch.float64) = }")
     assert torch.all(torch.norm(z - z[0,:], dim=-1) < eps)
 
     torch.set_default_dtype(torch.float32)
@@ -102,55 +98,38 @@ def test_deepset_deeponet():
 
 def test_deepset_deeponet_perm_invariant():
     
-    # Note: in single precision, there is a lot of accumulated errors that make the invariance bad
-    torch.set_default_dtype(torch.float64)
+    # torch.set_default_dtype(torch.float64)
+    # device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cpu"
+    torch.set_default_device(device)
+
+    torch.manual_seed(seed=0)
 
     from dataset.dataset import load_MeshData, FEniCSDataset, ToDType
     x_data, y_data = load_MeshData("dataset/artificial_learnext", "folders")
-    dataset = FEniCSDataset(x_data, y_data, 
-                    x_transform=ToDType("default"),
-                    y_transform=ToDType("default"))
-    
-    uh0 = dataset[0][0]
 
-    print(uh0.shape)
     vs = 3924 # Number of vertices in artificial learnext mesh
     uh0 = torch.rand((vs, 2))
-    print(f"{uh0.shape = }")
 
-
-
-    bs = 3
-    # uh = torch.stack([uh0[torch.randperm(uh0.shape[-2]),:] for _ in range(bs)])
+    bs = 20
     uh = torch.stack([uh0 for _ in range(bs)])
 
-    print(f"{uh.shape = }")
-
-
-    eps = 1e-14
-    # assert torch.norm(torch.sum(uh - uh0, dim=1)) < eps, "Make sure the inputs are actually permutations"
+    eps = torch.finfo(torch.get_default_dtype()).eps
 
     y = y_data.dof_coordinates[None,...].to(dtype=torch.get_default_dtype())
 
-    from neuraloperators.encoders import IdentityEncoder, CoordinateInsertEncoder, FixedFilterEncoder, BoundaryFilterEncoder, RandomPermuteEncoder, SequentialEncoder
-    # filter = torch.LongTensor(list(range(10)))
-    filter = x_data.boundary_dofs[:10]
-    # print(filter)
-    # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), FixedFilterEncoder(filter, dim=-2))
-    # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), FixedFilterEncoder(filter, dim=-2), RandomPermuteEncoder(dim=-2))
+    from neuraloperators.encoders import IdentityEncoder, CoordinateInsertEncoder, FixedFilterEncoder, RandomPermuteEncoder, SequentialEncoder
+    num_verts_x = 40
+    filter = x_data.boundary_dofs[:num_verts_x]
     branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), FixedFilterEncoder(filter, dim=-2, unit_shape_length=2), RandomPermuteEncoder(dim=-2, unit_shape_length=2))
     trunk_encoder = IdentityEncoder()
 
-    print(f"{branch_encoder(uh) = }")
-    print(f"{branch_encoder(uh).shape = }")
-    assert True # Encoders need to be fixed before finishing this test.
-    return
-    quit()
-    assert branch_encoder(uh).shape == (uh.shape[0], 10, 4)
+    brenc_uh = branch_encoder(uh)
+
+    assert torch.norm(torch.sum(brenc_uh - brenc_uh[0,...], dim=-2)) < 20*eps # Assert produced tensor is actually a permutation of first.
+    assert branch_encoder(uh).shape == (uh.shape[0], num_verts_x, 4)
     assert trunk_encoder(y).shape == y.shape
 
-    print(f"{branch_encoder(uh) - branch_encoder(uh[[0],...])}")
-    print(f"{torch.sum(branch_encoder(uh) - branch_encoder(uh[[0],...]), dim=1)}")
 
     from neuraloperators.mlp import MLP
     representer = MLP([4, 8], activation=nn.ReLU())
@@ -169,17 +148,8 @@ def test_deepset_deeponet_perm_invariant():
     assert deeponet(uh, y).shape == (uh.shape[0], y.shape[1], 2)
     assert (deeponet(uh, y) + uh).shape == (uh.shape[0], y.shape[1], 2)
 
-    # print(deeponet(uh, y) - deeponet(uh[[0],...], y))
-
-    # z = deepset(x)
-    # assert z.shape == (bs, 4)
-
-    # eps = 1e-14
-    # assert torch.all(torch.norm(z - z[0,:], dim=-1) < eps)
-
-    # torch.set_default_dtype(torch.float32)
-
-    # assert False
+    z_diff = deeponet(uh, y) - deeponet(uh[[0],...], y)
+    assert torch.max(torch.norm(z_diff, dim=-1)) < eps * 20
 
     torch.set_default_dtype(torch.float32)
 
@@ -188,6 +158,6 @@ def test_deepset_deeponet_perm_invariant():
 
 if __name__ == "__main__":
     test_deepsets()
-    test_deepset_deeponet()
     test_deepset_perm_invariant()
-    # test_deepset_deeponet_perm_invariant()
+    test_deepset_deeponet()
+    test_deepset_deeponet_perm_invariant()
