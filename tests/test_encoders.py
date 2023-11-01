@@ -5,10 +5,10 @@ from torch.utils.data import DataLoader
 def test_coordinate_insert():
 
     x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
-    dataset = FEniCSDataset(x_data, y_data, 
+    dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
-    dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
+    dataloader = DataLoader(dset, batch_size=2, shuffle=False)
 
     coordinate_insert_encoder = CoordinateInsertEncoder(x_data)
     A = nn.Linear(4, 3)
@@ -68,10 +68,10 @@ def test_random_permute_encoder():
 def test_filter_encoders():
 
     x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
-    dataset = FEniCSDataset(x_data, y_data, 
+    dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
-    dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
+    dataloader = DataLoader(dset, batch_size=2, shuffle=False)
 
     x0, _ = next(iter(dataloader))
 
@@ -94,10 +94,10 @@ def test_filter_encoders():
 def test_combined_encoders():
 
     x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
-    dataset = FEniCSDataset(x_data, y_data, 
+    dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
-    dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
+    dataloader = DataLoader(dset, batch_size=2, shuffle=False)
 
     x0, _ = next(iter(dataloader))
 
@@ -120,10 +120,10 @@ def test_combined_encoders():
 def test_flatten_encoder():
 
     x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
-    dataset = FEniCSDataset(x_data, y_data, 
+    dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
-    dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
+    dataloader = DataLoader(dset, batch_size=2, shuffle=False)
 
     x0, _ = next(iter(dataloader))
 

@@ -6,16 +6,23 @@ import json
 import neuraloperators.mlp
 import neuraloperators.deeponet
 import neuraloperators.encoders
+import neuraloperators.deepsets
 
 import dataset.dataset
 
 from typing import Literal
 from os import PathLike
-from torch.utils.data import DataLoader, Dataset, random_split
+from torch.utils.data import DataLoader, random_split
 
 class ModelBuilder:
 
+    def Sequential(model_dicts: list[dict]) -> nn.Sequential:
+
+        return nn.Sequential(*(build_model(model_dict)
+                                for model_dict in model_dicts))
+    
     def activation(activation_type: str) -> nn.Module:
+
         activations = {"ReLU": nn.ReLU(), 
                        "Tanh": nn.Tanh(),
                        "Sigmoid": nn.Sigmoid()}
@@ -25,13 +32,13 @@ class ModelBuilder:
 
         activation = ModelBuilder.activation(mlp_dict["activation"])
         widths = mlp_dict["widths"]
-
         return neuraloperators.mlp.MLP(widths, activation)
     
-    def Sequential(model_dicts: list[dict]) -> nn.Sequential:
+    def DeepSets(deepsets_dict: dict) -> neuraloperators.deepsets.DeepSets:
 
-        return nn.Sequential(*(build_model(model_dict)
-                                for model_dict in model_dicts))
+        representer = build_model(deepsets_dict["representer"])
+        processor = build_model(deepsets_dict["processor"])
+        return neuraloperators.deepsets.DeepSets(representer, processor, deepsets_dict["reduction"])
 
 
 def build_model(model_dict: dict) -> nn.Module:
@@ -140,6 +147,9 @@ class EncoderBuilder:
 
     def RandomSelectEncoder(mesh_data: dataset.dataset.MeshData, rand_select_dict: dict) -> neuraloperators.encoders.RandomSelectEncoder:
         return neuraloperators.encoders.RandomSelectEncoder(**rand_select_dict)
+    
+    def RandomPermuteEncoder(mesh_data: dataset.dataset.MeshData, rand_perm_dict: dict) -> neuraloperators.encoders.RandomPermuteEncoder:
+        return neuraloperators.encoders.RandomPermuteEncoder(**rand_perm_dict)
 
     def FlattenEncoder(mesh_data: dataset.dataset.MeshData, flatten_dict: dict) -> neuraloperators.encoders.FlattenEncoder:
         return  neuraloperators.encoders.FlattenEncoder(**flatten_dict)

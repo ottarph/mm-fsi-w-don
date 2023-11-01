@@ -162,5 +162,5 @@ class RandomSelectEncoder(FilterEncoder):
         return torch.randperm(x.shape[self.dim], device=x.device)[:self.num_inds]
     
     def __repr__(self) -> str:
-        return f"RandomSelectEncoder(dim={self.dim.item()}, num_inds={self.num_inds.item})"
+        return f"RandomSelectEncoder(dim={self.dim.item()}, num_inds={self.num_inds.item()})"
 
