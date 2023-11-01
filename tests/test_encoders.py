@@ -32,36 +32,6 @@ def test_random_permute_encoder():
     x1 = torch.stack([x0] * bs)
     x2 = torch.stack([x1, -x1], dim=0)
 
-    class Permuter(nn.Module):
-        def __init__(self, dim: int, unit_shape_length: int):
-            super().__init__()
-            self.register_buffer("dim", torch.tensor(dim, dtype=torch.long))
-            self.dim: torch.LongTensor
-
-            self.register_buffer("unit_shape_length", torch.tensor(unit_shape_length, dtype=torch.long))
-            self.unit_shape_length: torch.LongTensor
-            
-            self.permute_batch = torch.vmap(self.permute_single, randomness="different")
-            self.permute_batch_double = torch.vmap(self.permute_batch, randomness="different")
-            return
-        
-        def permute_single(self, x: torch.Tensor) -> torch.Tensor:
-            filter = torch.randperm(x.shape[self.dim], device=x.device)
-            out = torch.index_select(x, dim=self.dim, index=filter)
-            return out
-            
-        def forward(self, x: torch.Tensor) -> torch.Tensor:
-            if len(x.shape) == self.unit_shape_length:
-                out = self.permute_single(x)
-            elif len(x.shape) == self.unit_shape_length + 1:
-                out = self.permute_batch(x)
-            elif len(x.shape) == self.unit_shape_length + 2:
-                out = self.permute_batch_double(x)
-            else:
-                raise ValueError
-            return out
-  
-    # permuter = Permuter(-2, 2)
     permuter = RandomPermuteEncoder(-2, 2)
     
     # device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -74,32 +44,17 @@ def test_random_permute_encoder():
     eps = torch.finfo(torch.get_default_dtype()).eps
 
     # Test no batch:
-    # print(eps)
-    # print(dir(torch.finfo(torch.float32)))
-    # print(torch.sum(permuter(x0) - x0, dim=-2))
-    # print(torch.norm(torch.sum(permuter(x0) - x0, dim=-2)))
-    # print(torch.norm(permuter(x0) - x0))
     assert torch.norm(torch.sum(permuter(x0) - x0, dim=-2)) < 10*eps # Assert produced tensor is actually a permutation of x0
     assert torch.norm(permuter(x0) - x0) > 100*eps # Assert produced tensor is changed
-    # print(100*eps)
 
     # Test single batch dimension
-    # print(torch.sum(permuter(x1) - x0, dim=-2))
-    # print(torch.norm(torch.sum(permuter(x1) - x0, dim=-2)))
-    # print(permuter(x1).shape)
-    # print(permuter(x1) - permuter(x1)[0,...])
     assert torch.norm(torch.sum(permuter(x1) - x0, dim=-2)) < 10*eps # Assert produced tensor is actually a permutation of x0
     assert torch.norm(permuter(x1) - x1) > 100*eps # Assert produced tensor is changed
 
     # Test double batch dimension
-    # print(torch.sum(permuter(x2)[0,...] - x0, dim=-2))
-    # print(torch.sum(permuter(x2)[1,...] + x0, dim=-2))
-    # print(torch.norm(torch.sum(permuter(x2)[0,...] - x0, dim=-2)))
-    # print(torch.norm(torch.sum(permuter(x2)[1,...] + x0, dim=-2)))
     assert torch.norm(torch.sum(permuter(x2)[0,...] - x0, dim=-2)) < 10*eps # Assert produced tensor is actually a permutation of x0
     assert torch.norm(torch.sum(permuter(x2)[1,...] + x0, dim=-2)) < 10*eps # Assert produced tensor is actually a permutation of -x0
     assert torch.norm(permuter(x2) - x2) > 100*eps # Assert produced tensor is changed
-
 
     # print(permuter(x2))
     # print(permuter(x1))
