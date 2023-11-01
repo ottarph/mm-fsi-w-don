@@ -15,6 +15,9 @@ def test_coordinate_insert():
     
     x0, _ = next(iter(dataloader))
     assert A(coordinate_insert_encoder(x0)).shape == (x0.shape[0], x0.shape[1], A.out_features)
+    assert torch.max(coordinate_insert_encoder(x0)[0,:,0]) - 2.5 < torch.finfo(torch.get_default_dtype()).eps * 10
+
+    # print(coordinate_insert_encoder(x0))
 
     return
 
@@ -58,7 +61,8 @@ def test_random_permute_encoder():
                 raise ValueError
             return out
   
-    permuter = Permuter(-2, 2)
+    # permuter = Permuter(-2, 2)
+    permuter = RandomPermuteEncoder(-2, 2)
     
     # device = "cuda" if torch.cuda.is_available() else "cpu"
     device = "cpu"
@@ -116,16 +120,20 @@ def test_filter_encoders():
 
     x0, _ = next(iter(dataloader))
 
-    rand_perm_enc = RandomPermuteEncoder(-2)
+    rand_perm_enc = RandomPermuteEncoder(-2, 2)
 
     assert rand_perm_enc(x0).shape == x0.shape
     assert torch.norm(x0 - rand_perm_enc(x0)) != 0
 
-    rand_select_enc = RandomSelectEncoder(-2, 20)
+    rand_select_enc = RandomSelectEncoder(-2, 2, 20)
 
     assert rand_select_enc(x0).shape == (x0.shape[0], rand_select_enc.num_inds, x0.shape[-1])
     assert torch.norm(x0[:,:rand_select_enc.num_inds,:] - rand_select_enc(x0)) != 0
 
+    x1 = torch.stack([x0[0,...], x0[0,...]], dim=0)
+    rsx1 = rand_select_enc(x1)
+    assert torch.norm(rsx1[0,...] - rsx1[1,...]) > torch.finfo(torch.get_default_dtype()).eps * 100
+    
     return
 
 def test_combined_encoders():
@@ -140,7 +148,7 @@ def test_combined_encoders():
 
     coordinate_insert_encoder = CoordinateInsertEncoder(x_data)
     boundary_filter_encoder = BoundaryFilterEncoder(x_data)
-    rand_select_encoder = RandomSelectEncoder(-2, 20)
+    rand_select_encoder = RandomSelectEncoder(-2, 2, 20)
 
     encoder = SequentialEncoder(coordinate_insert_encoder, boundary_filter_encoder, rand_select_encoder)
 
@@ -149,8 +157,7 @@ def test_combined_encoders():
     assert torch.norm(x0[:,:rand_select_encoder.num_inds,:] - encoder(x0)[:, :, 2:]) != 0
 
     A = nn.Linear(4, 3)
-    assert A(encoder(x0)).shape == (x0.shape[0], rand_select_encoder.num_inds, A.out_features)
-    
+    assert A(encoder(x0)).shape == (x0.shape[0], rand_select_encoder.num_inds, A.out_features) 
 
     return
 
@@ -170,7 +177,7 @@ def test_flatten_encoder():
 
     coordinate_insert_encoder = CoordinateInsertEncoder(x_data) # Insert coordinates, (batch, num_vert, 2) -> (batch, num_vert, 4)
     boundary_filter_encoder = BoundaryFilterEncoder(x_data) # Select only boundary vertices, (batch, num_vert, 4) -> (batch, num_bound_vert, 4)
-    rand_select_encoder = RandomSelectEncoder(-2, 20) # Select 20 vertices at random, (batch, num_bound_vert, 4) -> (batch, 20, 4)
+    rand_select_encoder = RandomSelectEncoder(-2, 2, 20) # Select 20 vertices at random, (batch, num_bound_vert, 4) -> (batch, 20, 4)
     flat_encoder = FlattenEncoder(1) # Flatten tensor starting at second dimension, (batch, 20, 4) -> (batch, 20*4=80)
     encoder = SequentialEncoder(coordinate_insert_encoder, boundary_filter_encoder, rand_select_encoder, flat_encoder)
 

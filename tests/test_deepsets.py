@@ -74,7 +74,7 @@ def test_deepset_deeponet():
     y = y_data.dof_coordinates[None,...].to(dtype=torch.get_default_dtype())
 
     from neuraloperators.encoders import IdentityEncoder, CoordinateInsertEncoder, RandomSelectEncoder, BoundaryFilterEncoder, SequentialEncoder
-    branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), RandomSelectEncoder(-2, 40))
+    branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), RandomSelectEncoder(-2, 2, 40))
     trunk_encoder = IdentityEncoder()
 
     assert branch_encoder(uh).shape == (uh.shape[0], 40, 4)
@@ -138,7 +138,7 @@ def test_deepset_deeponet_perm_invariant():
     # print(filter)
     # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), FixedFilterEncoder(filter, dim=-2))
     # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), FixedFilterEncoder(filter, dim=-2), RandomPermuteEncoder(dim=-2))
-    branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), FixedFilterEncoder(filter, dim=-2), RandomPermuteEncoder(dim=-2))
+    branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), FixedFilterEncoder(filter, dim=-2, unit_shape_length=2), RandomPermuteEncoder(dim=-2, unit_shape_length=2))
     trunk_encoder = IdentityEncoder()
 
     print(f"{branch_encoder(uh) = }")

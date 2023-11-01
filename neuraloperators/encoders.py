@@ -64,7 +64,7 @@ class TensorPrependEncoder(Encoder):
         return
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
+        assert len(x.shape) == 3, "Only works with batched tensors"
         return torch.cat((self.tensor.expand((x.shape[0], -1, -1)), x), dim=-1)
 
 
@@ -81,26 +81,42 @@ class CoordinateInsertEncoder(TensorPrependEncoder):
 
 class FilterEncoder(Encoder):
 
-    def __init__(self, dim: int):
+    def __init__(self, dim: int, unit_shape_length: int):
         super().__init__()
 
         self.register_buffer("dim", torch.tensor(dim, dtype=torch.long))
         self.dim: torch.LongTensor
 
+        self.register_buffer("unit_shape_length", torch.tensor(unit_shape_length, dtype=torch.long))
+        self.unit_shape_length: torch.LongTensor
+
+        self.select_batch = torch.vmap(self.select_single, randomness="different")
+        self.select_batch_double = torch.vmap(self.select_batch, randomness="different")
+
         return
 
     def filter(self, x: torch.Tensor) -> torch.LongTensor:
         raise NotImplementedError()
+
+    def select_single(self, x: torch.Tensor) -> torch.Tensor:
+        return torch.index_select(x, self.dim, self.filter(x))
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-    
-        return torch.index_select(x, self.dim, self.filter(x))
+        if len(x.shape) == self.unit_shape_length:
+            out = self.select_single(x)
+        elif len(x.shape) == self.unit_shape_length + 1:
+            out = self.select_batch(x)
+        elif len(x.shape) == self.unit_shape_length + 2:
+            out = self.select_batch_double(x)
+        else:
+            raise ValueError
+        return out
     
 
 class FixedFilterEncoder(FilterEncoder):
 
-    def __init__(self, filter: torch.LongTensor, dim: int):
-        super().__init__(dim=dim)
+    def __init__(self, filter: torch.LongTensor, dim: int, unit_shape_length: int):
+        super().__init__(dim=dim, unit_shape_length=unit_shape_length)
         self.register_buffer("filter_tensor", filter)
         self.filter_tensor: torch.LongTensor
 
@@ -115,15 +131,16 @@ class BoundaryFilterEncoder(FixedFilterEncoder):
     def __init__(self, mesh_data: MeshData):
         indices = mesh_data.boundary_dofs
 
-        super().__init__(filter=indices, dim=-2)
+        # Assumes only vector ``MeshData``
+        super().__init__(filter=indices, dim=-2, unit_shape_length=2)
         
         return
 
 
 class RandomPermuteEncoder(FilterEncoder):
 
-    def __init__(self, dim: int):
-        super().__init__(dim=dim)
+    def __init__(self, dim: int, unit_shape_length: int):
+        super().__init__(dim=dim, unit_shape_length=unit_shape_length)
 
     def filter(self, x: torch.Tensor) -> torch.LongTensor:
         return torch.randperm(x.shape[self.dim], device=x.device)
@@ -134,8 +151,8 @@ class RandomPermuteEncoder(FilterEncoder):
     
 class RandomSelectEncoder(FilterEncoder):
 
-    def __init__(self, dim: int, num_inds: int):
-        super().__init__(dim=dim)
+    def __init__(self, dim: int, unit_shape_length: int, num_inds: int):
+        super().__init__(dim=dim, unit_shape_length=unit_shape_length)
         self.register_buffer("num_inds", torch.tensor(num_inds, dtype=torch.long))
         self.num_inds: torch.LongTensor
 
