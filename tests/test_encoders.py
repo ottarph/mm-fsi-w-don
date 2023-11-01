@@ -18,6 +18,68 @@ def test_coordinate_insert():
 
     return
 
+def test_random_permute_encoder():
+
+
+    x0 = torch.rand((5,2))
+    bs = 4
+    x1 = torch.stack([x0] * bs)
+    x2 = torch.stack([x1, -x1], dim=0)
+
+    class Permuter(nn.Module):
+        def __init__(self, dim: int):
+            super().__init__()
+            self.register_buffer("dim", torch.tensor(dim, dtype=torch.long))
+            self.dim: torch.LongTensor
+            
+            self.permute_batch = torch.vmap(self.permute_single, randomness="different")
+            self.permute_batch_double = torch.vmap(self.permute_batch, randomness="different")
+            return
+        
+        def permute_single(self, x):
+            filter = torch.randperm(x.shape[self.dim], device=x.device)
+            out = torch.index_select(x, dim=self.dim, index=filter)
+            return out
+            
+        def forward(self, x):
+            if len(x.shape) == 2:
+                out = self.permute_single(x)
+            elif len(x.shape) == 3:
+                out = self.permute_batch(x)
+            elif len(x.shape) == 4:
+                out = self.permute_batch_double(x)
+            else:
+                raise ValueError
+            return out
+  
+    permuter = Permuter(-2)
+    
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    permuter.to(device)
+    x0 = x0.to(device)
+    x1 = x1.to(device)
+    x2 = x2.to(device)
+
+    print(permuter(x1))
+    print(permuter(x0))
+    print(x0)
+
+    print()
+    # print(f"{x.shape = }")
+    # print(f"{x2.shape = }")
+    print(permuter(x2))
+    print(x0)
+
+    # print(batch_permute_x(x0))
+    # print(x)
+    # print(x[batched_gen_filter(x),:])
+
+    # print(permute(batched_gen_filter(x), x))
+
+
+
+    return
+
 def test_filter_encoders():
 
     x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
@@ -93,6 +155,7 @@ def test_flatten_encoder():
 
 if __name__ == "__main__":
     test_coordinate_insert()
+    test_random_permute_encoder()
     test_filter_encoders()
     test_combined_encoders()
     test_flatten_encoder()
