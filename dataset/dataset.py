@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 from torch.nn import Module, Identity
 from os import PathLike
 from pathlib import Path
-from typing import Iterable, Literal
+from typing import Iterable, Literal, Tuple
 
 from typing import NewType, Any
 Mesh = NewType("Mesh", Any)
@@ -230,7 +230,7 @@ class FEniCSDataset(Dataset):
     def __len__(self) -> int:
         return len(self.checkpoints)
     
-    def __getitem__(self, index: int) -> torch.Tensor:
+    def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor]:
 
         x = self.x_data[index]
         y = self.y_data[index]

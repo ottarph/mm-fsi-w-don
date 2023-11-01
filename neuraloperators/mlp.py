@@ -23,4 +23,8 @@ class MLP(nn.Module):
 
         return self.layers(x)
     
+    def __call__(self, x: torch.Tensor) -> torch.Tensor: # Hack to make type hint for self(x) be tensor
+        return super().__call__(x)
+
+    
 __all__ = ["MLP"]

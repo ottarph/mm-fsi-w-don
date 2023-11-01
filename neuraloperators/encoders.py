@@ -8,6 +8,8 @@ class Encoder(nn.Module):
     def __init__(self):
         super().__init__()
 
+    def __call__(self, x: torch.Tensor) -> torch.Tensor: # Hack to make type hint for self(u, y) be tensor
+        return super().__call__(x)
 
 class SequentialEncoder(Encoder):
     def __init__(self, *args):
