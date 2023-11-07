@@ -159,7 +159,11 @@ class EncoderBuilder:
 
     def SequentialEncoder(mesh_data: dataset.dataset.MeshData, encoder_dicts: list[dict]) -> neuraloperators.encoders.SequentialEncoder:
         return neuraloperators.encoders.SequentialEncoder(*(build_encoder(mesh_data, encoder_dict) for encoder_dict in encoder_dicts))
-
+    
+    def SplitAdditiveEncoder(mesh_data: dataset.dataset.MeshData, split_enc_dict: dict) -> neuraloperators.encoders.SplitAdditiveEncoder:
+        return neuraloperators.encoders.SplitAdditiveEncoder(build_model(split_enc_dict["encoder_1"]), build_model(split_enc_dict["encoder_2"]),
+                                                             split_enc_dict["length_1"], split_enc_dict["length_2"])
+    
     def IdentityEncoder(mesh_data: dataset.dataset.MeshData, ident_dict: dict) -> neuraloperators.encoders.IdentityEncoder:
         return neuraloperators.encoders.IdentityEncoder(**ident_dict)
 

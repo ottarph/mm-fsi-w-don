@@ -10,7 +10,8 @@ from neuraloperators.training import Context, train_with_dataloader
 from dataset.dataset import MeshData
 
 def run_boundary_problem(problem_file: Path, results_dir: Path, 
-                         xdmf_overwrite: bool = False, save_xdmf: bool = True) -> None:
+                         xdmf_overwrite: bool = False, save_xdmf: bool = True,
+                         latest_results_dir: Path = Path("results/latest")) -> None:
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -72,7 +73,6 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     context.save_model(results_dir)
     shutil.copy(problem_file, results_dir / "problem.json")
 
-    latest_results_dir = Path("results/latest")
     latest_results_data_dir = latest_results_dir / "data"
     context.save_results(latest_results_data_dir)
     context.save_summary(latest_results_data_dir)

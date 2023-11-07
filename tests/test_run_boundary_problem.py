@@ -19,7 +19,7 @@ def test_run_boundary_problem(tmp_path):
     tmp_results_dir = tmp_path / "results"
     tmp_results_dir.mkdir()
 
-    run_boundary_problem(tmp_prob_dict_path, tmp_results_dir, save_xdmf=False)
+    run_boundary_problem(tmp_prob_dict_path, tmp_results_dir, save_xdmf=False, latest_results_dir=tmp_path / "latest")
 
     (tmp_results_dir / "state_dict.pt").unlink()
     (tmp_results_dir / "train_val_lr_hist.pdf").unlink()

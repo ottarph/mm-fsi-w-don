@@ -140,6 +140,33 @@ def test_flatten_encoder():
 
     return
 
+def test_split_additive_encoder():
+
+    x_data, _ = load_MeshData("dataset/artificial_learnext", "XDMF")
+
+    enc_1_dict = {
+        "MLP": {"widths": [2, 64], "activation": "ReLU"},
+    }
+    enc_2_dict = {
+        "MLP": {"widths": [2, 64], "activation": "ReLU"},
+    }
+    splenc_dict = {
+        "encoder_1": enc_1_dict,
+        "encoder_2": enc_2_dict,
+        "length_1": 2,
+        "length_2": 2
+    }
+    from neuraloperators.loading import build_encoder
+    splenc = build_encoder(x_data, {"SplitAdditiveEncoder": splenc_dict})
+
+    from neuraloperators.mlp import MLP
+    assert isinstance(splenc, SplitAdditiveEncoder)
+    assert isinstance(splenc.encoder_1, MLP)
+    assert isinstance(splenc.encoder_2, MLP)
+    assert splenc.length_1 == 2
+    assert splenc.length_2 == 2
+
+    return
 
 if __name__ == "__main__":
     test_coordinate_insert()
@@ -147,3 +174,4 @@ if __name__ == "__main__":
     test_filter_encoders()
     test_combined_encoders()
     test_flatten_encoder()
+    test_split_additive_encoder()

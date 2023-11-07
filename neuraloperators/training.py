@@ -191,10 +191,6 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
 
             train_dataloader_loop.set_description_str(f"Mini-batch #{mb:03}")
 
-        context.epoch += 1
-        context.train_hist.append(epoch_loss)
-        context.lr_hist.append(lr)
-
         if val_dataloader is not None:
             network.eval()
             val_loss = 0.0
@@ -208,6 +204,10 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
                         val_loss += cost_function(network(x), y).item()
             context.val_hist.append(val_loss)
             network.train()
+
+        context.epoch += 1
+        context.train_hist.append(epoch_loss)
+        context.lr_hist.append(lr)
 
         if scheduler is not None:
             if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):

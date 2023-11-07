@@ -50,6 +50,25 @@ class FlattenEncoder(Encoder):
     def __repr__(self) -> str:
         return f"FlattenEncoder(start_dim={self.start_dim.item()})"
     
+class SplitAdditiveEncoder(Encoder):
+
+    def __init__(self, encoder_1: nn.Module, encoder_2: nn.Module, length_1: int, length_2: int):
+        super().__init__()
+
+        self.encoder_1 = encoder_1
+        self.encoder_2 = encoder_2
+
+        self.length_1 = length_1
+        self.length_2 = length_2
+
+        return
+    
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        return super().__call__(x)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.encoder_1(x[...,:self.length_1]) + self.encoder_2(x[...,self.length_1:])
+
 
 class TensorPrependEncoder(Encoder):
     """ Inserts `tensor` before `x` in the last dimension. """
