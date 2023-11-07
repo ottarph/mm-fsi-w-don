@@ -14,11 +14,11 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    deeponet, train_dataloader, val_dataloader, dataset, \
+    deeponet, train_dataloader, val_dataloader, dset, \
     optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem(problem_file)
 
-    x_data: MeshData = dataset.x_data
-    y_data: MeshData = dataset.y_data
+    x_data: MeshData = dset.x_data
+    y_data: MeshData = dset.y_data
 
     evaluation_points = y_data.dof_coordinates[None,...].to(dtype=torch.get_default_dtype())
 
@@ -59,7 +59,11 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
 
     context = Context(net, loss_fn, optimizer, scheduler)
 
-    train_with_dataloader(context, train_dataloader, num_epochs, device, val_dataloader=val_dataloader)
+    try:
+        train_with_dataloader(context, train_dataloader, num_epochs, device, val_dataloader=val_dataloader)
+    except KeyboardInterrupt:
+        if input("Training interrupted. Save current progress? (y/n): ").lower() != "y":
+            quit()
 
     results_data_dir = results_dir / "data"
     context.save_results(results_data_dir)
@@ -85,7 +89,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     if save_xdmf:
         from tools.xdmf_io import pred_to_xdmf
 
-        pred_to_xdmf(net, dataset, results_dir / "pred", overwrite=xdmf_overwrite)
+        pred_to_xdmf(net, dset, results_dir / "pred", overwrite=xdmf_overwrite)
         shutil.copy(results_dir / "pred.xdmf", latest_results_dir / "pred.xdmf")
         shutil.copy(results_dir / "pred.h5", latest_results_dir / "pred.h5")
 
@@ -97,6 +101,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--problem-file", default=Path("problems/default.json"), type=Path)
     parser.add_argument("--results-dir", default=Path("results/default"), type=Path)
+    # parser.add_argument("--problem-file", default=Path("problems/defaultdeepsets.json"), type=Path)
+    # parser.add_argument("--results-dir", default=Path("results/defaultdeepsets"), type=Path)
     parser.add_argument("--save-xdmf", default=True, action=argparse.BooleanOptionalAction)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()

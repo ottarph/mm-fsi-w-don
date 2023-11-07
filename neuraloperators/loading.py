@@ -123,6 +123,9 @@ class SchedulerBuilder:
     
     def ReduceLROnPlateau(optimizer: torch.optim.Optimizer, reducelr_dict: dict) -> torch.optim.lr_scheduler.ReduceLROnPlateau:
         return torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, **reducelr_dict)
+    
+    def ExponentialLR(optimizer: torch.optim.Optimizer, explr_dict: dict) -> torch.optim.lr_scheduler.ExponentialLR:
+        return torch.optim.lr_scheduler.ExponentialLR(optimizer, **explr_dict)
 
 LR_Scheduler = torch.optim.lr_scheduler.LRScheduler | torch.optim.lr_scheduler.ReduceLROnPlateau
 def build_scheduler(optimizer, scheduler_dict: dict) -> LR_Scheduler:

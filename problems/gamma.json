@@ -1,20 +1,27 @@
 {
+    "comment": "Decently good on learnext_p1, scaled jacobian det of 0.13 for all snapshots. First attempt at moving away from ReduceLROnPlateau.",
     "branch": {
-        "MLP": {
-            "widths": [880, 256, 256, 256, 256, 256, 256, 32],
-            "activation": "ReLU"
+        "DeepSets": {
+            "representer": {
+                "MLP": {"widths": [4, 256, 256, 256, 256], "activation": "ReLU"}
+            },
+            "processor": {
+                "MLP": {"widths": [256, 256, 32], "activation": "ReLU"}
+            },
+            "reduction": "mean"
         }
     },
     "trunk": {
         "MLP": {
-            "widths": [2, 256, 256, 256, 256, 256, 256, 32],
+            "widths": [2, 256, 256, 256, 256, 256, 256, 256, 32],
             "activation": "ReLU"
         }
     },
     "branch_encoder": {
         "SequentialEncoder": [
+            {"CoordinateInsertEncoder": {}},
             {"BoundaryFilterEncoder": {}},
-            {"FlattenEncoder": {"start_dim": -2}}
+            {"RandomPermuteEncoder": {"dim": -2, "unit_shape_length": 2}}
         ]
     },
     "trunk_encoder": {
@@ -39,10 +46,8 @@
         }
     },
     "scheduler": {
-        "ReduceLROnPlateau": {
-            "factor": 0.5
-        }
+        "ConstantLR": {"factor": 1.0}
     },
-    "num_epochs": 4000,
-    "seed": 0
+    "num_epochs": 2000,
+    "seed": 1
 }
