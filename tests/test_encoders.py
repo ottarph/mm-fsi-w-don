@@ -159,7 +159,7 @@ def test_split_additive_encoder():
     from neuraloperators.loading import build_encoder
     splenc = build_encoder(x_data, {"SplitAdditiveEncoder": splenc_dict})
 
-    from neuraloperators.mlp import MLP
+    from neuraloperators.networks import MLP
     assert isinstance(splenc, SplitAdditiveEncoder)
     assert isinstance(splenc.encoder_1, MLP)
     assert isinstance(splenc.encoder_2, MLP)

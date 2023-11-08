@@ -12,7 +12,7 @@ def test_deepsets():
 
     x0, _ = next(iter(dataloader))
 
-    from neuraloperators.mlp import MLP
+    from neuraloperators.networks import MLP
     representer = MLP([2, 16, 8], activation=nn.ReLU())
     processor = MLP([8, 16, 4])
     reduction = "mean"
@@ -31,7 +31,7 @@ def test_deepset_perm_invariant():
     # device = "cuda" if torch.cuda.is_available() else "cpu"
     device = "cpu"
 
-    from neuraloperators.mlp import MLP
+    from neuraloperators.networks import MLP
     representer = MLP([2, 8], activation=nn.ReLU())
     processor = MLP([8, 4])
     reduction = "mean"
@@ -76,7 +76,7 @@ def test_deepset_deeponet():
     assert branch_encoder(uh).shape == (uh.shape[0], 40, 4)
     assert trunk_encoder(y).shape == y.shape
 
-    from neuraloperators.mlp import MLP
+    from neuraloperators.networks import MLP
     representer = MLP([4, 16, 8], activation=nn.ReLU())
     processor = MLP([8, 16, 20])
     reduction = "mean"
@@ -131,7 +131,7 @@ def test_deepset_deeponet_perm_invariant():
     assert trunk_encoder(y).shape == y.shape
 
 
-    from neuraloperators.mlp import MLP
+    from neuraloperators.networks import MLP
     representer = MLP([4, 8], activation=nn.ReLU())
     processor = MLP([8, 20])
     reduction = "mean"

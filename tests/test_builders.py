@@ -12,7 +12,7 @@ def test_mlp_builder():
     }
 
     model = build_model(model_dict)
-    from neuraloperators.mlp import MLP
+    from neuraloperators.networks import MLP
     assert isinstance(model, MLP)
     assert model.widths == [2, 4, 2]
     assert isinstance(model.activation, torch.nn.ReLU)
@@ -31,8 +31,8 @@ def test_sequential_builder():
     model = build_model(model_dict)
     x = torch.rand((20, 2))
     assert model(x).shape == (20, 3)
-    assert isinstance(model[0], neuraloperators.mlp.MLP)
-    assert isinstance(model[1], neuraloperators.mlp.MLP)
+    assert isinstance(model[0], neuraloperators.networks.MLP)
+    assert isinstance(model[1], neuraloperators.networks.MLP)
 
     return
 

@@ -1,6 +1,6 @@
 
 from neuraloperators.deeponet import *
-from neuraloperators.mlp import MLP
+from neuraloperators.networks import MLP
 from neuraloperators.encoders import FlattenEncoder, IdentityEncoder
 
 

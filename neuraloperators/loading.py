@@ -3,7 +3,7 @@ import torch.nn as nn
 from pathlib import Path
 import json
 
-import neuraloperators.mlp
+import neuraloperators.networks
 import neuraloperators.deeponet
 import neuraloperators.encoders
 import neuraloperators.deepsets
@@ -28,11 +28,11 @@ class ModelBuilder:
                        "Sigmoid": nn.Sigmoid()}
         return activations[activation_type]
 
-    def MLP(mlp_dict: dict) -> neuraloperators.mlp.MLP:
+    def MLP(mlp_dict: dict) -> neuraloperators.networks.MLP:
 
         activation = ModelBuilder.activation(mlp_dict["activation"])
         widths = mlp_dict["widths"]
-        return neuraloperators.mlp.MLP(widths, activation)
+        return neuraloperators.networks.MLP(widths, activation)
     
     def DeepSets(deepsets_dict: dict) -> neuraloperators.deepsets.DeepSets:
 
