@@ -26,7 +26,7 @@
     "branch_encoder": {
         "SequentialEncoder": [
             {"CoordinateInsertEncoder": {}},
-            {"BoundaryFilterEncoder": {}},
+            {"InnerBoundaryFilterEncoder": {}},
             {"RandomPermuteEncoder": {"dim": -2, "unit_shape_length": 2}}
         ]
     },
@@ -43,7 +43,9 @@
         "train_val_split": [0.7, 0.3]
     },
     "loss_fn": {
-        "MSELoss": {}
+        "RelativeMSELoss": {
+            "eps": 0.001
+        }
     },
     "optimizer": {
         "Adam": {
@@ -54,6 +56,6 @@
             "factor": 0.5
         }
     },
-    "num_epochs": 1000,
+    "num_epochs": 2000,
     "seedx": 0
 }

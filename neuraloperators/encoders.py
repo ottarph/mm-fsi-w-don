@@ -154,6 +154,39 @@ class BoundaryFilterEncoder(FixedFilterEncoder):
         super().__init__(filter=indices, dim=-2, unit_shape_length=2)
         
         return
+    
+
+class InnerBoundaryFilterEncoder(FixedFilterEncoder):
+
+    def __init__(self, mesh_data: MeshData):
+        import dolfin as df
+        import numpy as np
+
+        def inner_boundary(x, on_boundary):
+            if on_boundary:
+                eps = 1e-3
+                if df.near(x[1], 0, eps) or df.near(x[1], 0.41, eps) \
+                    or df.near(x[0], 0, eps) or df.near(x[0], 2.5, eps):
+                    return False
+                else:
+                    return True
+            else:
+                return False
+
+        V = df.FunctionSpace(mesh_data.function_space.mesh(), "CG", mesh_data.function_space.ufl_element().degree())
+        u = df.Function(V)
+
+        bc = df.DirichletBC(V, df.Constant(1), inner_boundary)
+        bc.apply(u.vector())
+
+        ids = np.flatnonzero(u.vector().get_local())
+
+        dof_indices = torch.tensor(ids)
+
+        # Assumes only vector ``MeshData``
+        super().__init__(filter=dof_indices, dim=-2, unit_shape_length=2)
+        
+        return
 
 
 class RandomPermuteEncoder(FilterEncoder):

@@ -17,9 +17,11 @@ class RelativeMSELoss(DataInformedLoss):
         self.eps = eps
 
         return
+    
+    def __repr__(self) -> str:
+        return f"RelativeMSELoss({self.eps:.1e})"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor, pred: torch.Tensor) -> torch.Tensor:
-
 
         return torch.sum( ( (target - pred)**2 / ( (target - input)**2 + self.eps ) ) )
     

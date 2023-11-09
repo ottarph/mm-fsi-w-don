@@ -169,6 +169,9 @@ class EncoderBuilder:
     def BoundaryFilterEncoder(mesh_data: dataset.dataset.MeshData, boundary_filter_dict: dict) -> neuraloperators.encoders.BoundaryFilterEncoder:
         return neuraloperators.encoders.BoundaryFilterEncoder(mesh_data=mesh_data, **boundary_filter_dict)
 
+    def InnerBoundaryFilterEncoder(mesh_data: dataset.dataset.MeshData, boundary_filter_dict: dict) -> neuraloperators.encoders.InnerBoundaryFilterEncoder:
+        return neuraloperators.encoders.InnerBoundaryFilterEncoder(mesh_data=mesh_data, **boundary_filter_dict)
+
     def RandomSelectEncoder(mesh_data: dataset.dataset.MeshData, rand_select_dict: dict) -> neuraloperators.encoders.RandomSelectEncoder:
         return neuraloperators.encoders.RandomSelectEncoder(**rand_select_dict)
     

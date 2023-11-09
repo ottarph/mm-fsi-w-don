@@ -91,6 +91,22 @@ def test_filter_encoders():
     
     return
 
+def test_inner_boundary_filter():
+
+    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    dset = FEniCSDataset(x_data, y_data, 
+                    x_transform=ToDType("default"),
+                    y_transform=ToDType("default"))
+    dataloader = DataLoader(dset, batch_size=2, shuffle=False)
+
+    x0, _ = next(iter(dataloader))
+
+    encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), InnerBoundaryFilterEncoder(x_data))
+
+    assert encoder(x0).shape == (x0.shape[0], 206, 4)
+
+    return
+
 def test_combined_encoders():
 
     x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
@@ -172,6 +188,7 @@ if __name__ == "__main__":
     test_coordinate_insert()
     test_random_permute_encoder()
     test_filter_encoders()
+    test_inner_boundary_filter()
     test_combined_encoders()
     test_flatten_encoder()
     test_split_additive_encoder()
