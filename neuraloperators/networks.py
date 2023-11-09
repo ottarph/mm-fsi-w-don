@@ -11,17 +11,25 @@ class MLP(nn.Module):
         self.widths = widths
         self.activation = activation
 
-        layers = []
-        for w1, w2 in zip(widths[:-1], widths[1:]):
-            layers.append(nn.Linear(w1, w2))
-            layers.append(self.activation)
-        self.layers = nn.Sequential(*layers[:-1])
+        # layers = []
+        # for w1, w2 in zip(widths[:-1], widths[1:]):
+        #     layers.append(nn.Linear(w1, w2))
+        #     layers.append(self.activation)
+        # self.layers = nn.Sequential(*layers[:-1])
+        self.layers = nn.ModuleList([nn.Linear(w1, w2) for (w1, w2) in zip(widths[:-1], widths[1:])])
 
         return
     
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    # def forward(self, x: torch.Tensor) -> torch.Tensor:
 
-        return self.layers(x)
+    #     return self.layers(x)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        y = x
+        for layer in self.layers[:-1]:
+            y = self.activation(layer(y))
+        y = self.layers[-1](y)
+        return y
     
     def __call__(self, x: torch.Tensor) -> torch.Tensor: # Hack to make type hint for self(x) be tensor
         return super().__call__(x)
