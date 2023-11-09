@@ -7,6 +7,7 @@ import neuraloperators.networks
 import neuraloperators.deeponet
 import neuraloperators.encoders
 import neuraloperators.deepsets
+import neuraloperators.vidon
 
 import dataset.dataset
 
@@ -39,7 +40,27 @@ class ModelBuilder:
         representer = build_model(deepsets_dict["representer"])
         processor = build_model(deepsets_dict["processor"])
         return neuraloperators.deepsets.DeepSets(representer, processor, deepsets_dict["reduction"])
+    
+    def SplitAdditive(split_add_dict: dict) -> neuraloperators.networks.SplitAdditive:
+        model_1 = build_model(split_add_dict["model_1"])
+        model_2 = build_model(split_add_dict["model_2"])
+        return neuraloperators.networks.SplitAdditive(model_1, model_2, split_add_dict["length_1"], split_add_dict["length_2"])
+    
+    def VIDONMHA(mha_dict: dict) -> neuraloperators.vidon.VIDONMHA:
+        if "weight_activation" in mha_dict.keys():
+            mha_dict["weight_activation"] = build_model({"activation": mha_dict["weight_activation"]})
+        if "value_activation" in mha_dict.keys():
+            mha_dict["value_activation"] = build_model({"activation": mha_dict["value_activation"]})
+            
+        return neuraloperators.vidon.VIDONMHA(**mha_dict)
+    
+    def VIDON(vidon_dict: dict) -> neuraloperators.vidon.VIDON:
 
+        split_additive = build_model({"SplitAdditive": vidon_dict["SplitAdditive"]})
+        mha = build_model({"VIDONMHA": vidon_dict["MultiHeadAttention"]})
+        processor = build_model(vidon_dict["Processor"])
+
+        return neuraloperators.vidon.VIDON(split_additive, mha, processor)
 
 def build_model(model_dict: dict) -> nn.Module:
 

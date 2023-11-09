@@ -56,6 +56,74 @@ def test_deepsets_builder():
 
     return
 
+def test_split_additive_builder():
+
+    split_add_dict = {
+        "model_1": {"MLP": {"widths": [2, 64], "activation": "ReLU"}},
+        "model_2": {"MLP": {"widths": [2, 64], "activation": "ReLU"}},
+        "length_1": 2,
+        "length_2": 2
+    }
+
+    split_add_model = build_model({"SplitAdditive": split_add_dict})
+    x = torch.rand((5, 20, 4))
+    assert split_add_model(x).shape == (5, 20, 64)
+
+    return
+
+def test_vidon_mha_builder():
+    
+    x = torch.rand((2, 60, 64))
+
+    vmha_dict = {
+        "d_enc": 64, "out_size": 32, "num_heads": 4,
+        "weight_hidden_size": 256, "weight_num_layers": 4,
+        "value_hidden_size": 256, "value_num_layers": 4
+    }
+    vmha = build_model({"VIDONMHA": vmha_dict})
+    assert vmha(x).shape == (x.shape[0], 32*4)
+
+    vmha_dict = {
+        "d_enc": 64, "out_size": 32, "num_heads": 4,
+        "weight_hidden_size": 256, "weight_num_layers": 4,
+        "value_hidden_size": 256, "value_num_layers": 4,
+        "weight_activation": "ReLU", "value_activation": "Tanh"
+    }
+    vmha = build_model({"VIDONMHA": vmha_dict})
+    assert vmha(x).shape == (x.shape[0], 32*4)
+
+    return
+
+def test_vidon_builder():
+    
+    x = torch.rand((2, 60, 4))
+
+    split_add_dict = {
+        "model_1": {"MLP": {"widths": [2, 64], "activation": "ReLU"}},
+        "model_2": {"MLP": {"widths": [2, 64], "activation": "ReLU"}},
+        "length_1": 2,
+        "length_2": 2
+    }
+    mha_dict = {
+        "d_enc": 64, "out_size": 32, "num_heads": 4,
+        "weight_hidden_size": 256, "weight_num_layers": 4,
+        "value_hidden_size": 256, "value_num_layers": 4
+    }
+    processor_dict = {
+        "MLP": {"widths": [32*4, 256, 32], "activation": "ReLU"}
+    }
+    vidon_dict = {
+        "SplitAdditive": split_add_dict,
+        "MultiHeadAttention": mha_dict,
+        "Processor": processor_dict
+    }
+
+    vidon = build_model({"VIDON": vidon_dict})
+    
+    assert vidon(x).shape == (x.shape[0], 32)
+
+    return
+
 def test_encoder_builder():
     from dataset.dataset import load_MeshData, FEniCSDataset, ToDType
     x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
@@ -126,6 +194,9 @@ if __name__ == "__main__":
     test_mlp_builder()
     test_sequential_builder()
     test_deepsets_builder()
+    test_split_additive_builder()
+    test_vidon_mha_builder()
+    test_vidon_builder()
     test_encoder_builder()
     test_optimizer_builder()
     test_scheduler_builder()
