@@ -2,8 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from neuraloperators.networks import MLP
-
+import neuraloperators.networks
 from typing import Callable
 
 
@@ -18,10 +17,10 @@ class VIDONMHAHead(nn.Module):
         self.out_size = out_size
 
         weight_widths = [d_enc] + [weight_hidden_size] * (weight_num_layers - 2) + [1]
-        self.weight_mlp = MLP(weight_widths, weight_activation)
+        self.weight_mlp = neuraloperators.networks.MLP(weight_widths, weight_activation)
 
         value_widths = [d_enc] + [value_hidden_size] * (value_num_layers - 2) + [out_size]
-        self.value_mlp = MLP(value_widths, value_activation)
+        self.value_mlp = neuraloperators.networks.MLP(value_widths, value_activation)
 
         return
     
@@ -62,15 +61,13 @@ class VIDONMHA(nn.Module):
         return out
 
 
-from neuraloperators.networks import SplitAdditive
-
 class VIDON(nn.Module):
     """
         Implementation of branch network from Variable-Input Deep Operator Networks. Needs to be combined
         with a trunk network in DeepONet class to give a proper VIDON as described in the paper.
     """
 
-    def __init__(self, split_encoder: SplitAdditive, multiheadattention: VIDONMHA, processor: MLP):
+    def __init__(self, split_encoder: neuraloperators.networks.SplitAdditive, multiheadattention: VIDONMHA, processor: neuraloperators.networks.MLP):
         super().__init__()
 
         self.split_encoder = split_encoder
