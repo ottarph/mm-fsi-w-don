@@ -187,7 +187,7 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
                     return loss
             
             loss = optimizer.step(closure)
-            epoch_loss += loss.item()
+            epoch_loss += loss.item() / len(train_dataloader.dataset) * x.shape[0]
 
             train_dataloader_loop.set_description_str(f"Mini-batch #{mb:03}")
 
@@ -199,9 +199,9 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
                 for x, y in val_dataloader_loop:
                     x, y = x.to(device), y.to(device)
                     if isinstance(cost_function, DataInformedLoss):
-                        val_loss += cost_function(x, y, network(x)).item()
+                        val_loss += cost_function(x, y, network(x)).item() / len(val_dataloader.dataset) * x.shape[0]
                     else:
-                        val_loss += cost_function(network(x), y).item()
+                        val_loss += cost_function(network(x), y).item() / len(val_dataloader.dataset) * x.shape[0]
             context.val_hist.append(val_loss)
             network.train()
 

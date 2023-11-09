@@ -96,10 +96,10 @@ from neuraloperators.cost_functions import RelativeMSELoss
 class LossBuilder:
 
     def MSELoss(mseloss_dict: dict) -> nn.MSELoss:
-        return nn.MSELoss(**mseloss_dict)
+        return nn.MSELoss(**mseloss_dict, reduction="mean")
     
     def L1Loss(l1loss_dict: dict) -> nn.L1Loss:
-        return nn.L1Loss(**l1loss_dict)
+        return nn.L1Loss(**l1loss_dict, reduction="mean")
     
     def RelativeMSELoss(rel_mseloss_dict: dict) -> RelativeMSELoss:
         return RelativeMSELoss(**rel_mseloss_dict)
