@@ -1,4 +1,5 @@
 {
+    "comment": "Permutation invariant DeepSets-DeepONet that reaches 0.11 minimum determinant of deformation gradient on learnext p1 dataset, trained on artificial dataset.",
     "branch": {
         "DeepSets": {
             "representer": {

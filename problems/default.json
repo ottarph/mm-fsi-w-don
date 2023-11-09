@@ -43,6 +43,6 @@
             "factor": 0.5
         }
     },
-    "num_epochs": 2000,
+    "num_epochs": 4000,
     "seed": 0
 }

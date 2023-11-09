@@ -52,11 +52,12 @@ def run_boundary_problem(problem_file: Path, dataset_path: Path, state_dict_path
     mask_tensor = y_data.create_mask_function()
     evaluation_points = y_data.dof_coordinates[None,...].to(dtype=torch.get_default_dtype())
 
-    from neuraloperators.encoders import BoundaryFilterEncoder, CoordinateInsertEncoder, SequentialEncoder, RandomPermuteEncoder, FlattenEncoder
+    from neuraloperators.encoders import BoundaryFilterEncoder, CoordinateInsertEncoder, SequentialEncoder, RandomPermuteEncoder, FlattenEncoder, InnerBoundaryFilterEncoder
     # If using DeepSets branch network
     # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), RandomPermuteEncoder(-2, 2))
+    branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), InnerBoundaryFilterEncoder(x_data), RandomPermuteEncoder(-2, 2))
     # If using MLP branch network
-    branch_encoder = SequentialEncoder(BoundaryFilterEncoder(x_data), FlattenEncoder(-2))
+    # branch_encoder = SequentialEncoder(BoundaryFilterEncoder(x_data), FlattenEncoder(-2))
 
     net.mask_tensor = mask_tensor # Make sure mask tensor is for correct dataset, not the one trained on, which is loaded in with the state-dict.
     net.evaluation_points = evaluation_points
