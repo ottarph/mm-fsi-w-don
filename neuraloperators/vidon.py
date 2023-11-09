@@ -48,7 +48,7 @@ class VIDONMHA(nn.Module):
         self.heads = nn.ModuleList([VIDONMHAHead(d_enc, out_size, 
                                     weight_hidden_size, weight_num_layers, 
                                     value_hidden_size, value_num_layers,
-                                    weight_activation=weight_activation, value_activation=value_activation)] * num_heads)
+                                    weight_activation=weight_activation, value_activation=value_activation) for _ in range(num_heads)])
         self.d_enc = d_enc
         self.out_size = out_size
         self.num_heads = num_heads
@@ -65,9 +65,10 @@ class VIDONMHA(nn.Module):
 from neuraloperators.networks import SplitAdditive
 
 class VIDON(nn.Module):
-
-    # def __init__(self, coord_dim: int, value_dim: int, d_enc: int, num_heads: int, num_branch_features: int,
-    #              )
+    """
+        Implementation of branch network from Variable-Input Deep Operator Networks. Needs to be combined
+        with a trunk network in DeepONet class to give a proper VIDON as described in the paper.
+    """
 
     def __init__(self, split_encoder: SplitAdditive, multiheadattention: VIDONMHA, processor: MLP):
         super().__init__()
