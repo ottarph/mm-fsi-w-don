@@ -99,10 +99,12 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--problem-file", default=Path("problems/default.json"), type=Path)
-    parser.add_argument("--results-dir", default=Path("results/default"), type=Path)
+    # parser.add_argument("--problem-file", default=Path("problems/default.json"), type=Path)
+    # parser.add_argument("--results-dir", default=Path("results/default"), type=Path)
     # parser.add_argument("--problem-file", default=Path("problems/defaultdeepsets.json"), type=Path)
     # parser.add_argument("--results-dir", default=Path("results/defaultdeepsets"), type=Path)
+    parser.add_argument("--problem-file", default=Path("problems/defaultvidon.json"), type=Path)
+    parser.add_argument("--results-dir", default=Path("results/defaultvidon"), type=Path)
     parser.add_argument("--save-xdmf", default=True, action=argparse.BooleanOptionalAction)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()

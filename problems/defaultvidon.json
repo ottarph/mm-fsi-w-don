@@ -1,0 +1,59 @@
+{
+    "branch": {
+        "VIDON": {
+            "SplitAdditive": {
+                "model_1": {"MLP": {"widths": [2, 64, 64], "activation": "ReLU"}},
+                "model_2": {"MLP": {"widths": [2, 64, 64], "activation": "ReLU"}},
+                "length_1": 2, "length_2": 2
+            },
+            "MultiHeadAttention": {
+                "d_enc": 64, "out_size": 128, "num_heads": 4,
+                "weight_hidden_size": 128, "weight_num_layers": 3,
+                "value_hidden_size": 128, "value_num_layers": 3,
+                "weight_activation": "ReLU", "value_activation": "ReLU"
+            },
+            "Processor": {
+                "MLP": {"widths": [512, 512, 32], "activation": "ReLU"}
+            }
+        }
+    },
+    "trunk": {
+        "MLP": {
+            "widths": [2, 1024, 32],
+            "activation": "ReLU"
+        }
+    },
+    "branch_encoder": {
+        "SequentialEncoder": [
+            {"CoordinateInsertEncoder": {}},
+            {"BoundaryFilterEncoder": {}},
+            {"RandomPermuteEncoder": {"dim": -2, "unit_shape_length": 2}}
+        ]
+    },
+    "trunk_encoder": {
+        "IdentityEncoder": {}
+    },
+    "combine_style": 2,
+    "final_bias": false,
+    "mask_function_f": "2.0 * (x[0]+1.0) * (1-x[0]) * exp( -3.5*pow(x[0], 7) ) + 0.1",
+    "dataset": {
+        "directory": "dataset/artificial_learnext",
+        "style": "folders",
+        "batch_size": 256,
+        "train_val_split": [0.7, 0.3]
+    },
+    "loss_fn": {
+        "MSELoss": {}
+    },
+    "optimizer": {
+        "Adam": {
+        }
+    },
+    "scheduler": {
+        "ReduceLROnPlateau": {
+            "factor": 0.5
+        }
+    },
+    "num_epochs": 1000,
+    "seedx": 0
+}
