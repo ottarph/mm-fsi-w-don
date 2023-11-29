@@ -6,7 +6,7 @@ import shutil
 
 from pathlib import Path
 from neuraloperators.loading import load_deeponet_problem
-from neuraloperators.training import Context, train_with_dataloader
+from neuraloperators.training import Context, train_with_dataloader, load_model, save_model
 from dataset.dataset import MeshData
 
 def run_boundary_problem(problem_file: Path, results_dir: Path, 
@@ -70,14 +70,16 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     context.save_results(results_data_dir)
     context.save_summary(results_data_dir)
     context.plot_results(results_dir)
-    context.save_model(results_dir)
+    save_model(deeponet.branch, results_dir / "branch.pt")
+    save_model(deeponet.trunk, results_dir / "trunk.pt")
     shutil.copy(problem_file, results_dir / "problem.json")
 
     latest_results_data_dir = latest_results_dir / "data"
     context.save_results(latest_results_data_dir)
     context.save_summary(latest_results_data_dir)
     context.plot_results(latest_results_dir)
-    context.save_model(latest_results_dir)
+    save_model(deeponet.branch, latest_results_dir / "branch.pt")
+    save_model(deeponet.trunk, latest_results_dir / "trunk.pt")
     shutil.copy(problem_file, latest_results_dir / "problem.json")
 
 
@@ -99,10 +101,10 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
 def main():
 
     parser = argparse.ArgumentParser()
-    # parser.add_argument("--problem-file", default=Path("problems/default.json"), type=Path)
-    # parser.add_argument("--results-dir", default=Path("results/default"), type=Path)
-    parser.add_argument("--problem-file", default=Path("problems/defaultdeepsets.json"), type=Path)
-    parser.add_argument("--results-dir", default=Path("results/defaultdeepsets"), type=Path)
+    parser.add_argument("--problem-file", default=Path("problems/default.json"), type=Path)
+    parser.add_argument("--results-dir", default=Path("results/default"), type=Path)
+    # parser.add_argument("--problem-file", default=Path("problems/defaultdeepsets.json"), type=Path)
+    # parser.add_argument("--results-dir", default=Path("results/defaultdeepsets"), type=Path)
     # parser.add_argument("--problem-file", default=Path("problems/defaultvidon.json"), type=Path)
     # parser.add_argument("--results-dir", default=Path("results/defaultvidon"), type=Path)
     parser.add_argument("--save-xdmf", default=True, action=argparse.BooleanOptionalAction)
