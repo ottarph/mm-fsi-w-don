@@ -149,6 +149,26 @@ class Context:
 
         return fig
 
+
+def save_model(model: nn.Module, path: PathLike) -> None:
+    path = Path(path)
+    if not path.suffix == ".pt":
+        path.mkdir(parents=True, exist_ok=True)
+        path = path / "state_dict.pt"
+
+    torch.save(model.state_dict(), path)
+
+    return
+
+def load_model(model: nn.Module, path: PathLike) -> None:
+    path = Path(path)
+    if not path.suffix == ".pt":
+        path = path / "state_dict.pt"
+    model.load_state_dict(torch.load(path))
+
+    return
+
+
 from neuraloperators.cost_functions import DataInformedLoss
 def train_with_dataloader(context: Context, train_dataloader: DataLoader, 
                           num_epochs: int, device: Literal["cuda", "cpu"],
