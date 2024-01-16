@@ -1,0 +1,25 @@
+name: deeponet-learnext
+
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+
+dependencies:
+  - python>=3.10,<3.12
+  - pytorch
+  - pytorch-cuda=11.8
+  - fenics
+  - gmsh
+  - python-gmsh
+  - meshio
+  - pyvista
+  - numpy
+  - matplotlib
+  - ipykernel
+  - tqdm
+  - pytest
+  - pyyaml
+
+variables:
+  DL_TEST_VAR: testValue
