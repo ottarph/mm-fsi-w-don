@@ -8,7 +8,7 @@ Mesh = NewType("Mesh", Any)
 
 class MeshQuality:
 
-    def __init__(self, mesh: df.Mesh, quality_measure: str = "scaled_jacobian"):
+    def __init__(self, mesh: Mesh, quality_measure: str = "scaled_jacobian"):
 
         self.mesh = mesh
         self.quality_measure = quality_measure
@@ -71,8 +71,6 @@ def main():
     from tqdm import tqdm
     import matplotlib.pyplot as plt
 
-    # TestFilePath = Path("../LearnExt/Output/Extension/learnext_p2_period/output.xdmf")
-    # test_file_label = "uh"
     TestFilePath = Path("dataset/learnext_p2/output.xdmf")
     test_file_label = "uh"
     num_test_checkpoints = 206
@@ -110,53 +108,11 @@ def main():
 
     fig, ax = plt.subplots()
     ax.plot(range(num_test_checkpoints), min_mq, 'k-')
-    # fig.savefig("foo/figures/biharm_min_mq.pdf")
-    fig.savefig("biharm_min_mq.pdf")
-
-
-    # from conf import mesh_file_loc, with_submesh
-
-    # from tools.loading import load_mesh
-    # fluid_mesh = load_mesh(mesh_file_loc, with_submesh)
-
-    # scaled_jacobian = MeshQuality(fluid_mesh, quality_measure="scaled_jacobian")
-
-    # V = df.VectorFunctionSpace(fluid_mesh, "CG", 1, 2)
-
-    # from data_prep.transforms import DofPermutationTransform
-    # from conf import submesh_conversion_cg1_loc
-    # perm_tens = torch.LongTensor(np.load(submesh_conversion_cg1_loc))
-    # dof_perm_transform = DofPermutationTransform(perm_tens, dim=-2)
-    # transform = dof_perm_transform if with_submesh else None
-
-    # from data_prep.clement.dataset import learnextClementGradDataset
-    # from conf import test_checkpoints
-    # prefix = "data_prep/clement/data_store/grad/clm_grad"
-    # test_dataset = learnextClementGradDataset(prefix=prefix, checkpoints=test_checkpoints,
-    #                                      transform=transform, target_transform=transform)
-    # from torch.utils.data import DataLoader
-    # dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
-    # u_cg1 = df.Function(V)
-    # scratch = np.zeros_like(u_cg1.vector()[:])
-    # min_mq = np.zeros(len(dataloader))
-    # for k, (_, y) in enumerate(dataloader):
-    #     u_bih = y[0,:,:].detach().numpy()
-    #     scratch[0::2] = u_bih[:,0]
-    #     scratch[1::2] = u_bih[:,1]
-    #     u_cg1.vector()[:] = scratch
-    #     mq = scaled_jacobian(u_cg1)
-    #     min_mq[k] = mq.min()
-
-    # fig, ax = plt.subplots()
-    # ax.plot(range(len(dataloader)), min_mq, 'k-')
-    # fig.savefig("foo/figures/dataloader_min_mq.pdf")
+    fig.savefig("output/figures/learnext_p1_biharm_min_mq.pdf")
 
 
     return
 
 if __name__ == "__main__":
-
-    import os
-    print(os.environ["DL_TEST_VAR"])
 
     main()

@@ -6,6 +6,8 @@ info.json
 
 __pycache__
 
-results/
+results
 
 .vscode
+
+output
