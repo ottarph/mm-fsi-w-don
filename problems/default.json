@@ -24,9 +24,9 @@
     "final_bias": false,
     "mask_function_f": "2.0 * (x[0]+1.0) * (1-x[0]) * exp( -3.5*pow(x[0], 7) ) + 0.1",
     "dataset": {
-        "directory": "dataset/artificial_learnext",
+        "directory": "dataset/learnext_period_p1",
         "style": "folders",
-        "batch_size": 256,
+        "batch_size": 128,
         "train_val_split": [0.7, 0.3]
     },
     "loss_fn": {
@@ -35,7 +35,7 @@
         }
     },
     "optimizer": {
-        "Adam": {
+        "Adam": { "lr": 0.00001
         }
     },
     "scheduler": {
@@ -43,6 +43,6 @@
             "factor": 0.5
         }
     },
-    "num_epochs": 200,
+    "num_epochs": 5000,
     "seed": 0
 }

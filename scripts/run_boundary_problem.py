@@ -7,7 +7,7 @@ import shutil
 from pathlib import Path
 from neuraloperators.loading import load_deeponet_problem
 from neuraloperators.training import Context, train_with_dataloader, load_model, save_model
-from dataset.dataset import MeshData
+from dataset.dataset import MeshData, FEniCSDataset, load_MeshData, ToDType
 
 def run_boundary_problem(problem_file: Path, results_dir: Path, 
                          xdmf_overwrite: bool = False, save_xdmf: bool = True,
@@ -87,6 +87,27 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     x0, y0 = next(iter(train_dataloader))
     x0, y0 = x0[[0],...], y0[[0],...]
     z0 = net(x0)
+
+
+    test_dataset_path = Path("dataset/learnext_period_p1")
+    test_x_data, test_y_data = load_MeshData(test_dataset_path, style="folders")
+    test_dset = FEniCSDataset(test_x_data, test_y_data, 
+                    x_transform=ToDType("default"),
+                    y_transform=ToDType("default"))
+    
+    from tools.mesh_quality import mesh_quality_rollout
+    mesh_quality_array = mesh_quality_rollout(net, test_dset, 
+                                              quality_measure="scaled_jacobian", batch_size=64)
+    
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    ax.plot(range(mesh_quality_array.shape[0]), np.min(mesh_quality_array, axis=1), 'k-')
+    ax.set_xlabel("dataset index (k)")
+    ax.set_ylabel("scaled Jacobian mesh quality")
+    ax.set_xlim(xmin=0, xmax=len(test_dset))
+    fig.savefig(results_dir / "min_mesh_mq.pdf")
+    fig.savefig(latest_results_dir / "min_mesh_mq.pdf")
+
 
     if save_xdmf:
         from tools.xdmf_io import pred_to_xdmf

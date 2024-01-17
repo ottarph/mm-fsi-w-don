@@ -1,7 +1,12 @@
 import dolfin as df
 import numpy as np
 import torch
+import torch.nn as nn
 import pyvista as pv
+
+from tqdm import tqdm
+from torch.utils.data import DataLoader
+from dataset.dataset import FEniCSDataset
 
 from typing import NewType, Any
 Mesh = NewType("Mesh", Any)
@@ -65,10 +70,81 @@ class MeshQuality:
         
         return np.copy(quality.cell_data["CellQuality"])
 
+
+def torch_to_dolfin(uh: torch.Tensor, V: df.FunctionSpace, 
+                    u_out: df.Function | None = None, scratch: np.ndarray | None = None) -> df.Function:
+    """
+    Assumes uh contains vectors for u in order of scalar-valued dof locations.
+
+    Args:
+        uh (torch.Tensor): torch tensor containing vector valued function in order of dof-locations.
+        V (df.FunctionSpace): Function space to be mapped to.
+        u_out (df.Function | None, optional): Supply output vector for inplace. Defaults to None.
+
+    Raises:
+        NotImplementedError: Requires `uh` to be of three-dim tensor.
+        NotImplementedError: Only works on dolfin vector functions for now.
+
+    Returns:
+        df.Function: `uh` converted to dolfin.
+    """
+    if not len(uh.shape) == 3:
+        raise NotImplementedError
+    if not len(V.ufl_element().value_shape()) == 1:
+        raise NotImplementedError
+    
+    assert uh.device == torch.device("cpu")
+
+    if u_out is None:
+        u_out = df.Function(V)
+    if scratch is None:
+        scratch = u_out.vector().get_local()
+    else:
+        assert scratch.shape == (uh.shape[1] * uh.shape[2],)
+
+    uh_reshape = uh.detach().numpy()
+
+    for d in range(uh_reshape.shape[2]):
+        scratch[d::uh_reshape.shape[2]] = uh_reshape[0,:,d]
+    
+    u_out.vector().set_local(scratch)
+
+    return u_out
+
+
+def mesh_quality_rollout(model: nn.Module, dataset: FEniCSDataset, quality_measure: str = "scaled_jacobian",
+                         batch_size: int = 1) -> np.ndarray:
+
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    V = dataset.x_data.function_space
+    msh = dataset.x_data.mesh
+
+    mesh_quality = MeshQuality(msh, quality_measure=quality_measure)
+    mesh_quality_array = np.zeros((len(dataset), msh.num_cells()), dtype=np.float64)
+
+    u_out = df.Function(V)
+    scratch = np.zeros_like(u_out.vector().get_local())
+
+    device = next(iter(model.parameters())).device
+
+    progress_bar = tqdm(total=len(dataset), leave=True)
+    k = 0
+    for x, _ in dataloader:
+        x = x.to(device)
+        with torch.no_grad():
+            y = model(x).detach().cpu()
+        for b in range(y.shape[0]):
+            y_b = y[[b],...]
+            torch_to_dolfin(y_b, V, u_out, scratch)
+            mesh_quality_array[k,:] = mesh_quality(u_out)
+            progress_bar.update(1)
+            k += 1
+
+    return mesh_quality_array
+
 def main():
 
     from pathlib import Path
-    from tqdm import tqdm
     import matplotlib.pyplot as plt
 
     TestFilePath = Path("dataset/learnext_p2/output.xdmf")
@@ -114,5 +190,4 @@ def main():
     return
 
 if __name__ == "__main__":
-
     main()
