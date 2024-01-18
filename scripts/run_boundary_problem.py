@@ -6,13 +6,14 @@ import shutil
 import os
 
 from pathlib import Path
+from datetime import datetime
 from neuraloperators.loading import load_deeponet_problem
 from neuraloperators.training import Context, train_with_dataloader, load_model, save_model
 from dataset.dataset import MeshData, FEniCSDataset, load_MeshData, ToDType
 
 def run_boundary_problem(problem_file: Path, results_dir: Path, 
                          xdmf_overwrite: bool = False, save_xdmf: bool = True,
-                         latest_results_dir: Path = Path("results/latest")) -> None:
+                         latest_results_dir: Path = Path("latest_results")) -> None:
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -87,6 +88,13 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     shutil.copy(problem_file, latest_results_dir / "problem.json")
 
 
+    LOGDIR = Path("results/log")
+    LOGENTRY = datetime.now().strftime(r"%Y_%m_%d-%H_%M")
+    (LOGDIR / LOGENTRY).mkdir(exist_ok=True)
+    shutil.copy(problem_file, LOGDIR / LOGENTRY / "problem.json")
+    context.plot_results(LOGDIR / LOGENTRY)
+
+
     net.to("cpu")
     x0, y0 = next(iter(train_dataloader))
     x0, y0 = x0[[0],...], y0[[0],...]
@@ -112,6 +120,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     ax.set_ylim(ymin=0.0)
     fig.savefig(results_dir / "min_mesh_mq.pdf")
     fig.savefig(latest_results_dir / "min_mesh_mq.pdf")
+    fig.savefig(LOGDIR / LOGENTRY / "min_mesh_mq.pdf")
 
 
     if save_xdmf:
