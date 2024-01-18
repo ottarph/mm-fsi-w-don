@@ -109,6 +109,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     ax.set_xlabel("dataset index (k)")
     ax.set_ylabel("scaled Jacobian mesh quality")
     ax.set_xlim(xmin=0, xmax=len(test_dset))
+    ax.set_ylim(ymin=0.0)
     fig.savefig(results_dir / "min_mesh_mq.pdf")
     fig.savefig(latest_results_dir / "min_mesh_mq.pdf")
 
@@ -137,8 +138,9 @@ def main():
     save_xdmf: bool = args.save_xdmf
     overwrite: bool = args.overwrite
 
-    if os.environ["DL_LEARNEXT_PASS_OVERWRITE"]:
-        overwrite = True
+    if "DL_LEARNEXT_PASS_OVERWRITE" in os.environ.keys():
+        if os.environ["DL_LEARNEXT_PASS_OVERWRITE"]:
+            overwrite = True
 
     if not problem_file.is_file():
         raise RuntimeError("Given problem description file is not a file.")
