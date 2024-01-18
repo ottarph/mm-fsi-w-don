@@ -113,7 +113,13 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
-    ax.plot(range(mesh_quality_array.shape[0]), np.min(mesh_quality_array, axis=1), 'k-')
+    ax.plot(range(mesh_quality_array.shape[0]), np.min(mesh_quality_array, axis=1), 'k-', label=r"$\mathcal{N}_\theta$")
+    try:
+        biharm_mq = np.loadtxt("output/data/biharm_min_mq.csv")
+        ax.plot(range(biharm_mq.shape[0]), biharm_mq, 'k:', alpha=0.7, label="biharmonic")
+        ax.legend(loc="upper right")
+    except:
+        pass
     ax.set_xlabel("dataset index (k)")
     ax.set_ylabel("scaled Jacobian mesh quality")
     ax.set_xlim(xmin=0, xmax=len(test_dset))

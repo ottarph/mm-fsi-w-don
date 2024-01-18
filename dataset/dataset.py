@@ -209,6 +209,57 @@ class MeshDataFolders(MeshData):
         return torch.tensor(arr)
     
 
+class MeshDataTensors(MeshData):
+
+    def __init__(self, directory: PathLike, filename: PathLike,
+                 checkpoints: Iterable[int], 
+                 type: Literal["scalar", "vector", "tensor"], degree: int, dim: int,
+                 num_digits: int = -1):
+        """
+            `directory` is the folder where .npy-files are stored,
+            `file` is the .xdmf-file that was converted.
+        """
+
+        from torch.utils.data import DataLoader
+        tmp_meshdata_folders = MeshDataFolders(directory, filename, checkpoints, 
+                                               type, degree, dim, num_digits)
+        tmp_dset = FEniCSDataset(tmp_meshdata_folders, tmp_meshdata_folders)
+        tmp_dl = DataLoader(tmp_dset, batch_size=len(tmp_dset), shuffle=False)
+
+        self.tensors, tensors_y = next(iter(tmp_dl))
+        del tensors_y, tmp_dl, tmp_dset, tmp_meshdata_folders
+
+        self.filename = Path(filename)
+        self.file = df.XDMFFile(str(filename))
+
+        self.checkpoints = checkpoints
+
+        if num_digits == -1:
+            num_digits = int(np.floor(np.log10(len(checkpoints))))+1
+        self.num_digits = num_digits
+
+        self.mesh = df.Mesh()
+        self.file.read(self.mesh)
+        assert self.mesh.num_vertices() > 0
+
+        if type == "scalar":
+            raise NotImplementedError()
+        elif type == "vector":
+            self.function_space = df.VectorFunctionSpace(self.mesh, "CG", degree, dim)
+        elif type == "tensor":
+            raise NotImplementedError()
+        else:
+            raise ValueError()
+
+        super().__init__(self.mesh, self.function_space, self.checkpoints)
+
+        return
+    
+    def __getitem__(self, index: int) -> torch.Tensor:
+
+        return self.tensors[index]
+    
+
 class FEniCSDataset(Dataset):
 
     def __init__(self, x_data: MeshData, y_data: MeshData,
@@ -241,7 +292,7 @@ class FEniCSDataset(Dataset):
         return x, y
     
 
-def load_MeshData(directory: PathLike, style: Literal["XDMF", "folders"] = "folders") -> tuple[MeshData, MeshData]:
+def load_MeshData(directory: PathLike, style: Literal["XDMF", "folders", "tensors"] = "tensors") -> tuple[MeshData, MeshData]:
     directory = Path(directory)
     import json
 
@@ -272,6 +323,18 @@ def load_MeshData(directory: PathLike, style: Literal["XDMF", "folders"] = "fold
                                  range(info_dict["num_checkpoints"]), input_dict["type"], 
                                  input_dict["degree"], input_dict["dim"])
         y_data = MeshDataFolders(directory / "output_dir", directory / "output.xdmf",
+                                 range(info_dict["num_checkpoints"]), output_dict["type"], 
+                                 output_dict["degree"], output_dict["dim"])
+        
+    elif style == "tensors":
+
+        if not ( (directory / "input_dir").exists() and (directory / "output_dir").exists() ):
+            raise FileNotFoundError("Can not find dataset folders")
+        
+        x_data = MeshDataTensors(directory / "input_dir", directory / "input.xdmf",
+                                 range(info_dict["num_checkpoints"]), input_dict["type"], 
+                                 input_dict["degree"], input_dict["dim"])
+        y_data = MeshDataTensors(directory / "output_dir", directory / "output.xdmf",
                                  range(info_dict["num_checkpoints"]), output_dict["type"], 
                                  output_dict["degree"], output_dict["dim"])
     

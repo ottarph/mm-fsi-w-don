@@ -25,7 +25,7 @@
     "mask_function_f": "2.0 * (x[0]+1.0) * (1-x[0]) * exp( -3.5*pow(x[0], 7) ) + 0.1",
     "dataset": {
         "directory": "dataset/learnext_period_p1",
-        "style": "folders",
+        "style": "tensors",
         "batch_size": 128,
         "train_val_split": [0.7, 0.3]
     },

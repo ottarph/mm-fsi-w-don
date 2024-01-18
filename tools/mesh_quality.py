@@ -149,7 +149,7 @@ def main():
 
     TestFilePath = Path("dataset/learnext_p2/output.xdmf")
     test_file_label = "uh"
-    num_test_checkpoints = 206
+    num_test_checkpoints = 207
     test_file = df.XDMFFile(str(TestFilePath))
 
     msh = df.Mesh()
@@ -182,6 +182,7 @@ def main():
         mq = scaled_jacobian(u_cg2)
         min_mq[k] = mq.min()
 
+    np.savetxt("output/data/biharm_min_mq.csv", min_mq)
     fig, ax = plt.subplots()
     ax.plot(range(num_test_checkpoints), min_mq, 'k-')
     fig.savefig("output/figures/learnext_p1_biharm_min_mq.pdf")
