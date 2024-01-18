@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import shutil
+import os
 
 from pathlib import Path
 from neuraloperators.loading import load_deeponet_problem
@@ -59,9 +60,12 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     net.to(device)
 
     context = Context(net, loss_fn, optimizer, scheduler)
+    
+    show_mb_pbar = len(dset) > 20 * train_dataloader.batch_size
 
     try:
-        train_with_dataloader(context, train_dataloader, num_epochs, device, val_dataloader=val_dataloader)
+        train_with_dataloader(context, train_dataloader, num_epochs, device, val_dataloader=val_dataloader,
+                              show_minibatch_pbar=show_mb_pbar)
     except KeyboardInterrupt:
         if input("Training interrupted. Save current progress? (y/n): ").lower() != "y":
             quit()
@@ -124,10 +128,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--problem-file", default=Path("problems/default.json"), type=Path)
     parser.add_argument("--results-dir", default=Path("results/default"), type=Path)
-    # parser.add_argument("--problem-file", default=Path("problems/defaultdeepsets.json"), type=Path)
-    # parser.add_argument("--results-dir", default=Path("results/defaultdeepsets"), type=Path)
-    # parser.add_argument("--problem-file", default=Path("problems/defaultvidon.json"), type=Path)
-    # parser.add_argument("--results-dir", default=Path("results/defaultvidon"), type=Path)
     parser.add_argument("--save-xdmf", default=True, action=argparse.BooleanOptionalAction)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
@@ -136,6 +136,9 @@ def main():
     results_dir: Path = args.results_dir
     save_xdmf: bool = args.save_xdmf
     overwrite: bool = args.overwrite
+
+    if os.environ["DL_LEARNEXT_PASS_OVERWRITE"]:
+        overwrite = True
 
     if not problem_file.is_file():
         raise RuntimeError("Given problem description file is not a file.")

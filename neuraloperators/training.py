@@ -174,7 +174,7 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
                           num_epochs: int, device: Literal["cuda", "cpu"],
                           val_dataloader: DataLoader | None = None, 
                           callback: Callable[[Context], None] | None = None,
-                          break_at_lr: float = 1e-8):
+                          break_at_lr: float = 1e-8, show_minibatch_pbar: bool = True):
 
     network = context.network
     cost_function = context.cost_function
@@ -190,7 +190,11 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
     for epoch in epoch_loop:
         epoch_loss = 0.0
 
-        train_dataloader_loop = tqdm(train_dataloader, desc="Mini-batch #000", position=1, leave=False)
+        if show_minibatch_pbar:
+            train_dataloader_loop = tqdm(train_dataloader, desc="Mini-batch #000", position=1, leave=False)
+        else:
+            train_dataloader_loop = train_dataloader
+
         for mb, (x, y) in enumerate(train_dataloader_loop, start=1):
             x, y = x.to(device), y.to(device)
 
@@ -209,12 +213,17 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
             loss = optimizer.step(closure)
             epoch_loss += loss.item() / len(train_dataloader.dataset) * x.shape[0]
 
-            train_dataloader_loop.set_description_str(f"Mini-batch #{mb:03}")
+            if show_minibatch_pbar:
+                train_dataloader_loop.set_description_str(f"Mini-batch #{mb:03}")
 
         if val_dataloader is not None:
             network.eval()
             val_loss = 0.0
-            val_dataloader_loop = tqdm(val_dataloader, position=1, desc="Running over validation data set.", leave=False)
+            if show_minibatch_pbar:
+                val_dataloader_loop = tqdm(val_dataloader, position=1, desc="Running over validation data set.", leave=False)
+            else:
+                val_dataloader_loop = val_dataloader
+                
             with torch.no_grad():
                 for x, y in val_dataloader_loop:
                     x, y = x.to(device), y.to(device)
