@@ -138,8 +138,8 @@ def main():
     save_xdmf: bool = args.save_xdmf
     overwrite: bool = args.overwrite
 
-    if "DL_LEARNEXT_PASS_OVERWRITE" in os.environ.keys():
-        if os.environ["DL_LEARNEXT_PASS_OVERWRITE"]:
+    if "DL_PASS_OVERWRITE" in os.environ.keys():
+        if os.environ["DL_PASS_OVERWRITE"]:
             overwrite = True
 
     if not problem_file.is_file():
