@@ -1,13 +1,15 @@
 import argparse
 import torch
 import torch.nn as nn
+import dolfin as df
 
 from pathlib import Path
 from neuraloperators.loading import load_deeponet_problem
 from dataset.dataset import MeshData
+from tools.translation import torch_to_dolfin
+from tqdm import tqdm
 
-def pred_problem(problem_file: Path, dataset_path: Path, state_dict_path: Path, save_file: Path) -> None:
-
+def save_trunk_basis(problem_file: Path, state_dict_path: Path, save_file: Path) -> None:
 
     deeponet, _, _, dset, \
     _, _, _, _, mask_tensor = load_deeponet_problem(problem_file)
@@ -41,30 +43,23 @@ def pred_problem(problem_file: Path, dataset_path: Path, state_dict_path: Path, 
 
     
     net = EvalWrapper(deeponet, evaluation_points, mask_tensor)
-    net.load_state_dict(torch.load(state_dict_path, map_location=torch.device("cpu")))
+    net.to(torch.device("cpu"))
 
-    # Change mask_tensor, evaluation_points, rebuild branch_encoder to account for change in dataset
+    deeponet.trunk.load_state_dict(torch.load(state_dict_path, map_location=torch.device("cpu")))
+    trunk_basis_tensor = deeponet.trunk(evaluation_points) * mask_tensor
 
-    from dataset.dataset import load_MeshData, FEniCSDataset, ToDType
-    x_data, y_data = load_MeshData(dataset_path)
-    dset = FEniCSDataset(x_data, y_data, x_transform=ToDType(), y_transform=ToDType())
+    trunk_basis = trunk_basis_tensor.detach()[0,:,:]
 
-    mask_tensor = y_data.create_mask_function()
-    evaluation_points = y_data.dof_coordinates[None,...].to(dtype=torch.get_default_dtype())
+    msh = y_data.mesh
+    V = df.FunctionSpace(msh, "CG", y_data.function_space.ufl_element().degree())
+    u_out = df.Function(V)
 
-    from neuraloperators.encoders import BoundaryFilterEncoder, CoordinateInsertEncoder, SequentialEncoder, RandomPermuteEncoder, FlattenEncoder, InnerBoundaryFilterEncoder
-    # If using DeepSets branch network
-    # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), RandomPermuteEncoder(-2, 2))
-    branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), InnerBoundaryFilterEncoder(x_data), RandomPermuteEncoder(-2, 2))
-    # If using MLP branch network
-    # branch_encoder = SequentialEncoder(BoundaryFilterEncoder(x_data), FlattenEncoder(-2))
+    out_file = df.XDMFFile(str(save_file))
+    out_file.write(msh)
 
-    net.mask_tensor = mask_tensor # Make sure mask tensor is for correct dataset, not the one trained on, which is loaded in with the state-dict.
-    net.evaluation_points = evaluation_points
-    net.deeponet.branch_encoder = branch_encoder # Change to new branch encoder for correct dataset
-
-    from tools.xdmf_io import pred_to_xdmf
-    pred_to_xdmf(net, dset, save_file, overwrite=True)
+    for k in tqdm(range(trunk_basis.shape[1])):
+        torch_to_dolfin(trunk_basis[:,k], V, u_out)
+        out_file.write_checkpoint(u_out, "phi", k, append=True)
 
     return
 
@@ -73,13 +68,11 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--problem-file", default=Path("latest_results/problem.json"), type=Path)
-    parser.add_argument("--dataset", default=Path("dataset/learnext_period_p1"), type=Path)
-    parser.add_argument("--state-dict", default=Path("latest_results/state_dict.pt"), type=Path)
-    parser.add_argument("--save-file", default=Path("output/fenics/latest.pred"), type=Path)
+    parser.add_argument("--state-dict", default=Path("latest_results/trunk.pt"), type=Path)
+    parser.add_argument("--save-file", default=Path("output/fenics/latest.trunk_basis.xdmf"), type=Path)
     args = parser.parse_args()
 
     problem_file: Path = args.problem_file
-    dataset_path: Path = args.dataset
     state_dict: Path = args.state_dict
     save_file: Path = args.save_file
 
@@ -94,7 +87,7 @@ def main():
             [p.unlink() for p in collisions]
 
 
-    pred_problem(problem_file, dataset_path, state_dict, save_file)
+    save_trunk_basis(problem_file, state_dict, save_file)
 
     return
 

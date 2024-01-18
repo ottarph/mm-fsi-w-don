@@ -7,6 +7,7 @@ import pyvista as pv
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from dataset.dataset import FEniCSDataset
+from tools.translation import torch_to_dolfin
 
 from typing import NewType, Any
 Mesh = NewType("Mesh", Any)
@@ -69,47 +70,6 @@ class MeshQuality:
         quality = warped.compute_cell_quality(quality_measure=self.quality_measure)
         
         return np.copy(quality.cell_data["CellQuality"])
-
-
-def torch_to_dolfin(uh: torch.Tensor, V: df.FunctionSpace, 
-                    u_out: df.Function | None = None, scratch: np.ndarray | None = None) -> df.Function:
-    """
-    Assumes uh contains vectors for u in order of scalar-valued dof locations.
-
-    Args:
-        uh (torch.Tensor): torch tensor containing vector valued function in order of dof-locations.
-        V (df.FunctionSpace): Function space to be mapped to.
-        u_out (df.Function | None, optional): Supply output vector for inplace. Defaults to None.
-
-    Raises:
-        NotImplementedError: Requires `uh` to be of three-dim tensor.
-        NotImplementedError: Only works on dolfin vector functions for now.
-
-    Returns:
-        df.Function: `uh` converted to dolfin.
-    """
-    if not len(uh.shape) == 3:
-        raise NotImplementedError
-    if not len(V.ufl_element().value_shape()) == 1:
-        raise NotImplementedError
-    
-    assert uh.device == torch.device("cpu")
-
-    if u_out is None:
-        u_out = df.Function(V)
-    if scratch is None:
-        scratch = u_out.vector().get_local()
-    else:
-        assert scratch.shape == (uh.shape[1] * uh.shape[2],)
-
-    uh_reshape = uh.detach().numpy()
-
-    for d in range(uh_reshape.shape[2]):
-        scratch[d::uh_reshape.shape[2]] = uh_reshape[0,:,d]
-    
-    u_out.vector().set_local(scratch)
-
-    return u_out
 
 
 def mesh_quality_rollout(model: nn.Module, dataset: FEniCSDataset, quality_measure: str = "scaled_jacobian",
