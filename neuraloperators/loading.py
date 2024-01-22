@@ -213,16 +213,17 @@ def build_encoder(mesh_data: dataset.dataset.MeshData, encoder_dict: dict) -> ne
     return encoder
 
 
-def load_deeponet_problem(problem_path: PathLike) \
+def load_deeponet_problem(problemdict: PathLike | dict) \
     -> tuple[neuraloperators.deeponet.DeepONet, DataLoader, DataLoader, dataset.dataset.FEniCSDataset,
              torch.optim.Optimizer, LR_Scheduler, nn.modules.loss._Loss, 
              int, torch.Tensor]:
     
-    import json
-    problem_path = Path(problem_path)
-    
-    with open(problem_path, "r") as infile:
-        problemdict = json.loads(infile.read())
+    if isinstance(problemdict, PathLike):
+        import json
+        problem_path = Path(problemdict)
+        
+        with open(problem_path, "r") as infile:
+            problemdict = json.loads(infile.read())
 
     if "seed" in problemdict.keys():
         torch.manual_seed(problemdict["seed"])
