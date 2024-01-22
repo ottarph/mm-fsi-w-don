@@ -146,7 +146,17 @@ class SchedulerBuilder:
         return torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, **reducelr_dict)
     
     def ExponentialLR(optimizer: torch.optim.Optimizer, explr_dict: dict) -> torch.optim.lr_scheduler.ExponentialLR:
-        return torch.optim.lr_scheduler.ExponentialLR(optimizer, **explr_dict)
+        if "gamma" in explr_dict.keys():
+            return torch.optim.lr_scheduler.ExponentialLR(optimizer, **explr_dict)
+        elif "lr_last" in explr_dict.keys() and "num_epochs" in explr_dict.keys():
+            lr_0 = optimizer.param_groups[0]["lr"]
+            lr_last = explr_dict["lr_last"]
+            T = explr_dict["num_epochs"]
+            from numpy import exp, log
+            gamma = exp( ( log(lr_last) - log(lr_0) ) / T )
+            explr_dict.pop("lr_last"); explr_dict.pop("num_epochs")
+            explr_dict["gamma"] = gamma
+            return torch.optim.lr_scheduler.ExponentialLR(optimizer, **explr_dict)
 
 LR_Scheduler = torch.optim.lr_scheduler.LRScheduler | torch.optim.lr_scheduler.ReduceLROnPlateau
 def build_scheduler(optimizer, scheduler_dict: dict) -> LR_Scheduler:

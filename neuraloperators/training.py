@@ -174,7 +174,7 @@ def train_with_dataloader(context: Context, train_dataloader: DataLoader,
                           num_epochs: int, device: Literal["cuda", "cpu"],
                           val_dataloader: DataLoader | None = None, 
                           callback: Callable[[Context], None] | None = None,
-                          break_at_lr: float = 1e-8, show_minibatch_pbar: bool = True):
+                          break_at_lr: float = 1e-9, show_minibatch_pbar: bool = True):
 
     network = context.network
     cost_function = context.cost_function
