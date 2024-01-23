@@ -88,7 +88,7 @@ def pred_checkpoint_torch_to_dolfin(model: nn.Module, uh: torch.Tensor,
 def pred_to_xdmf(model: nn.Module, dataset: FEniCSDataset, output_path: PathLike,
                  overwrite: bool = False) -> None:
     output_path = Path(output_path)
-    assert output_path.suffix == "", "output_path argument should not include any suffix."
+    assert output_path.suffix == ".xdmf", "output_path argument should have suffix .xdmf."
 
     files_to_overwrite = list(filter(lambda p: p.exists(), [output_path.with_suffix(".xdmf"), output_path.with_suffix(".h5")]))
     if len(files_to_overwrite) > 0:

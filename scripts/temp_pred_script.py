@@ -6,7 +6,8 @@ from pathlib import Path
 from neuraloperators.loading import load_deeponet_problem
 from dataset.dataset import MeshData
 
-def pred_problem(problem_file: Path, dataset_path: Path, state_dict_path: Path, save_file: Path) -> None:
+def pred_problem(problem_file: Path, dataset_path: Path, branch_state_dict_path: Path,
+                 trunk_state_dict_path: Path, save_file: Path) -> None:
 
 
     deeponet, _, _, dset, \
@@ -41,7 +42,8 @@ def pred_problem(problem_file: Path, dataset_path: Path, state_dict_path: Path, 
 
     
     net = EvalWrapper(deeponet, evaluation_points, mask_tensor)
-    net.load_state_dict(torch.load(state_dict_path, map_location=torch.device("cpu")))
+    deeponet.branch.load_state_dict(torch.load(branch_state_dict_path,map_location=torch.device("cpu")))
+    deeponet.trunk.load_state_dict(torch.load(trunk_state_dict_path,map_location=torch.device("cpu")))
 
     # Change mask_tensor, evaluation_points, rebuild branch_encoder to account for change in dataset
 
@@ -55,9 +57,9 @@ def pred_problem(problem_file: Path, dataset_path: Path, state_dict_path: Path, 
     from neuraloperators.encoders import BoundaryFilterEncoder, CoordinateInsertEncoder, SequentialEncoder, RandomPermuteEncoder, FlattenEncoder, InnerBoundaryFilterEncoder
     # If using DeepSets branch network
     # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), RandomPermuteEncoder(-2, 2))
-    branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), InnerBoundaryFilterEncoder(x_data), RandomPermuteEncoder(-2, 2))
+    # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), InnerBoundaryFilterEncoder(x_data), RandomPermuteEncoder(-2, 2))
     # If using MLP branch network
-    # branch_encoder = SequentialEncoder(BoundaryFilterEncoder(x_data), FlattenEncoder(-2))
+    branch_encoder = SequentialEncoder(InnerBoundaryFilterEncoder(x_data), FlattenEncoder(-2))
 
     net.mask_tensor = mask_tensor # Make sure mask tensor is for correct dataset, not the one trained on, which is loaded in with the state-dict.
     net.evaluation_points = evaluation_points
@@ -72,15 +74,20 @@ def pred_problem(problem_file: Path, dataset_path: Path, state_dict_path: Path, 
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--problem-file", default=Path("latest_results/problem.json"), type=Path)
+    parser.add_argument("--problem-file", default=Path("hyperparameter_study/best_run/problem.json"), type=Path)
+    parser.add_argument("--branch-state-dict", default=Path("hyperparameter_study/best_run/branch.pt"), type=Path)
+    parser.add_argument("--trunk-state-dict", default=Path("hyperparameter_study/best_run/trunk.pt"), type=Path)
+    # parser.add_argument("--problem-file", default=Path("latest_results/problem.json"), type=Path)
+    # parser.add_argument("--branch-state-dict", default=Path("latest_results/branch.pt"), type=Path)
+    # parser.add_argument("--trunk-state-dict", default=Path("latest_results/trunk.pt"), type=Path)
     parser.add_argument("--dataset", default=Path("dataset/learnext_period_p1"), type=Path)
-    parser.add_argument("--state-dict", default=Path("latest_results/state_dict.pt"), type=Path)
-    parser.add_argument("--save-file", default=Path("output/fenics/latest.pred"), type=Path)
+    parser.add_argument("--save-file", default=Path("output/fenics/latest.pred.xdmf"), type=Path)
     args = parser.parse_args()
 
     problem_file: Path = args.problem_file
+    branch_state_dict: Path = args.branch_state_dict
+    trunk_state_dict: Path = args.trunk_state_dict
     dataset_path: Path = args.dataset
-    state_dict: Path = args.state_dict
     save_file: Path = args.save_file
 
     possible_collisions = [save_file.with_suffix(".xdmf"), save_file.with_suffix(".h5")]
@@ -93,8 +100,8 @@ def main():
         else:
             [p.unlink() for p in collisions]
 
-
-    pred_problem(problem_file, dataset_path, state_dict, save_file)
+    assert save_file.suffix == ".xdmf"
+    pred_problem(problem_file, dataset_path, branch_state_dict, trunk_state_dict, save_file)
 
     return
 

@@ -1,0 +1,13 @@
+{
+    "widths": [128, 256, 512],
+    "depths": [4, 5, 6, 7],
+    "basis_sizes": [32, 64],
+    "runs_per_combination": 2,
+    "epochs_per_run": 40000,
+    "expected_time_per_epoch": 0.05,
+    "expected_time_per_run": 1000,
+    "RESULTS_DIR": "hyperparameter_study/results",
+    "STAGING_DIR": "hyperparameter_study/staging",
+    "BEST_RUN_DIR": "hyperparameter_study/best_run",
+    "LOG_FILE": "hyperparameter_study/log.txt"
+}

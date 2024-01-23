@@ -132,7 +132,7 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
     if save_xdmf:
         from tools.xdmf_io import pred_to_xdmf
 
-        pred_to_xdmf(net, dset, results_dir / "pred", overwrite=xdmf_overwrite)
+        pred_to_xdmf(net, dset, results_dir / "pred.xdmf", overwrite=xdmf_overwrite)
         shutil.copy(results_dir / "pred.xdmf", latest_results_dir / "pred.xdmf")
         shutil.copy(results_dir / "pred.h5", latest_results_dir / "pred.h5")
 
