@@ -15,3 +15,5 @@ log.txt
 .vscode
 
 output
+
+.DS_Store

@@ -77,11 +77,12 @@ def main():
     parser.add_argument("--problem-file", default=Path("hyperparameter_study/best_run/problem.json"), type=Path)
     parser.add_argument("--branch-state-dict", default=Path("hyperparameter_study/best_run/branch.pt"), type=Path)
     parser.add_argument("--trunk-state-dict", default=Path("hyperparameter_study/best_run/trunk.pt"), type=Path)
+    parser.add_argument("--save-file", default=Path("output/fenics/best_run.pred.xdmf"), type=Path)
     # parser.add_argument("--problem-file", default=Path("latest_results/problem.json"), type=Path)
     # parser.add_argument("--branch-state-dict", default=Path("latest_results/branch.pt"), type=Path)
     # parser.add_argument("--trunk-state-dict", default=Path("latest_results/trunk.pt"), type=Path)
+    # parser.add_argument("--save-file", default=Path("output/fenics/latest.pred.xdmf"), type=Path)
     parser.add_argument("--dataset", default=Path("dataset/learnext_period_p1"), type=Path)
-    parser.add_argument("--save-file", default=Path("output/fenics/latest.pred.xdmf"), type=Path)
     args = parser.parse_args()
 
     problem_file: Path = args.problem_file
