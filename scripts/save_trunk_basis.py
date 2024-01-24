@@ -67,8 +67,10 @@ def save_trunk_basis(problem_file: Path, state_dict_path: Path, save_file: Path)
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--problem-file", default=Path("latest_results/problem.json"), type=Path)
-    parser.add_argument("--state-dict", default=Path("latest_results/trunk.pt"), type=Path)
+    parser.add_argument("--problem-file", default=Path("hyperparameter_study/best_run/problem.json"), type=Path)
+    parser.add_argument("--state-dict", default=Path("hyperparameter_study/best_run/trunk.pt"), type=Path)
+    # parser.add_argument("--problem-file", default=Path("latest_results/problem.json"), type=Path)
+    # parser.add_argument("--state-dict", default=Path("latest_results/trunk.pt"), type=Path)
     parser.add_argument("--save-file", default=Path("output/fenics/latest.trunk_basis.xdmf"), type=Path)
     args = parser.parse_args()
 
