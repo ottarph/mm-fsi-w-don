@@ -13,6 +13,7 @@ staging
 log.txt
 *.cg1.txt
 *.cg2.txt
+figures
 
 .vscode
 
