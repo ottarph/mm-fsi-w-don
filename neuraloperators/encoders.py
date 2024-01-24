@@ -1,5 +1,9 @@
 import torch
 import torch.nn as nn
+import dolfin as df
+import numpy as np
+from os import PathLike
+from pathlib import Path
 
 from dataset.dataset import MeshData
 
@@ -188,6 +192,60 @@ class InnerBoundaryFilterEncoder(FixedFilterEncoder):
         
         return
 
+
+class ExtractBoundaryDofEncoder(FixedFilterEncoder):
+
+    def __init__(self, fspace: df.FunctionSpace, dof_coords_file_path: PathLike):
+        """
+            Encoder which reorders dofs to match a different mesh. Necessary if dofs need to be input in a specific order
+            and the training was done on a different mesh than the prediction, but matching on the inner boundary.
+            `fspace` is the `df.FunctionSpace` of the fluid domain where you compute mesh motion.
+            `dof_coords_file_path` is the path to a file containing the coordinates of the inner boundary dofs
+            in the memory order for a given mesh. This allows to map inner boundary dofs between different meshes,
+            as long as the meshes are "essentially the same" on the inner boundary, i.e. equal up to numerical artifacts.
+        """
+        dof_coords_file_path = Path(dof_coords_file_path)
+        if not dof_coords_file_path.suffix in [".txt", ".npz"]:
+            raise ValueError
+        
+        def inner_boundary(x, on_boundary):
+            if on_boundary:
+                eps = 1e-3
+                if df.near(x[1], 0, eps) or df.near(x[1], 0.41, eps) \
+                    or df.near(x[0], 0, eps) or df.near(x[0], 2.5, eps):
+                    return False
+                else:
+                    return True
+            else:
+                return False
+            
+        V_scal = df.FunctionSpace(fspace.mesh(), "CG", fspace.ufl_element().degree())
+
+        u = df.Function(V_scal)
+        bc = df.DirichletBC(V_scal, df.Constant(1), inner_boundary)
+        u.vector()[:] = 0.0
+        bc.apply(u.vector())
+
+        int_bnd_ids = np.flatnonzero(u.vector().get_local())
+        int_bnd_dof_coords = V_scal.tabulate_dof_coordinates()[int_bnd_ids]
+
+        other_int_bnd_dof_coords = np.loadtxt(dof_coords_file_path) if dof_coords_file_path.suffix == ".txt" else np.load(dof_coords_file_path)
+
+        inds = np.zeros(other_int_bnd_dof_coords.shape[0], dtype=int)
+
+        for i in range(other_int_bnd_dof_coords.shape[0]):
+            j = np.argmin( np.linalg.norm( int_bnd_dof_coords - other_int_bnd_dof_coords[i] , axis=1 ) , axis=0 )
+            inds[i] = int_bnd_ids[j]
+
+        assert np.linalg.norm(other_int_bnd_dof_coords - V_scal.tabulate_dof_coordinates()[inds]) < 1e-7
+
+        indices = torch.tensor(inds)
+
+        # Assumes only vector ``df.FunctionSpace``
+        super().__init__(filter=indices, dim=-2, unit_shape_length=2)
+
+        return
+    
 
 class RandomPermuteEncoder(FilterEncoder):
 

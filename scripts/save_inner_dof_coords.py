@@ -2,9 +2,16 @@ import dolfin as df
 import numpy as np
 
 from dataset.dataset import load_MeshData
-x_data, y_data = load_MeshData("dataset/artificial_learnext")
 
-msh = x_data.mesh
+from pathlib import Path
+
+mesh_path = Path("dataset/learnext_period_p1/output.xdmf")
+save_path = Path("grav_test/data/learnext_inner_dof_coords")
+
+xdmf_file = df.XDMFFile(str(mesh_path))
+
+msh = df.Mesh()
+xdmf_file.read(msh)
 
 def inner_boundary(x, on_boundary):
     if on_boundary:
@@ -29,7 +36,7 @@ print(ids)
 print(V_CG1.tabulate_dof_coordinates()[ids])
 print(V_CG1.tabulate_dof_coordinates()[ids].shape)
 
-np.savetxt("submesh_int_bound_dof_coords_cg1.txt", V_CG1.tabulate_dof_coordinates()[ids])
+np.savetxt(save_path.with_suffix(".cg1.txt"), V_CG1.tabulate_dof_coordinates()[ids])
 
 
 V_CG2 = df.FunctionSpace(msh, "CG", 2)
@@ -44,4 +51,4 @@ print(ids)
 print(V_CG2.tabulate_dof_coordinates()[ids])
 print(V_CG2.tabulate_dof_coordinates()[ids].shape)
 
-np.savetxt("submesh_int_bound_dof_coords_cg2.txt", V_CG2.tabulate_dof_coordinates()[ids])
+np.savetxt(save_path.with_suffix(".cg2.txt"), V_CG2.tabulate_dof_coordinates()[ids])

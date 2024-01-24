@@ -11,6 +11,8 @@ latest_results
 best_run
 staging
 log.txt
+*.cg1.txt
+*.cg2.txt
 
 .vscode
 
