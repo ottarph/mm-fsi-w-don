@@ -8,7 +8,7 @@ channels:
 dependencies:
   - python=3.10
   - pytorch
-  - pytorch-cuda=11.8
+  - pytorch-cuda=12.1
   - fenics
   - gmsh
   - python-gmsh
