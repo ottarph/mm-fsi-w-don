@@ -2,7 +2,9 @@
     "num_runs": 10,
     "epochs_per_run": 40000,
     "expected_time_per_epoch": 0.05,
-    "RESULTS_DIR": "random_initialization/results",
+    "RESULTS_DIR": "random_initialization/results/runs",
+    "FIGURES_DIR": "random_initialization/figures",
+    "DATA_DIR": "random_initialization/results/data",
     "STAGING_DIR": "random_initialization/staging",
     "BEST_RUN_DIR": "random_initialization/best_run",
     "LOG_FILE": "random_initialization/log.txt"

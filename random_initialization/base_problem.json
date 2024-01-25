@@ -1,20 +1,46 @@
 {
     "branch": {
         "MLP": {
-            "widths": [412, 512, 512, 512, 512, 512, 512, 512, 32],
+            "widths": [
+                412,
+                512,
+                512,
+                512,
+                512,
+                512,
+                512,
+                512,
+                32
+            ],
             "activation": "ReLU"
         }
     },
     "trunk": {
         "MLP": {
-            "widths": [2, 512, 512, 512, 512, 512, 512, 512, 32],
+            "widths": [
+                2,
+                512,
+                512,
+                512,
+                512,
+                512,
+                512,
+                512,
+                32
+            ],
             "activation": "ReLU"
         }
     },
     "branch_encoder": {
         "SequentialEncoder": [
-            {"InnerBoundaryFilterEncoder": {}},
-            {"FlattenEncoder": {"start_dim": -2}}
+            {
+                "InnerBoundaryFilterEncoder": {}
+            },
+            {
+                "FlattenEncoder": {
+                    "start_dim": -2
+                }
+            }
         ]
     },
     "trunk_encoder": {
@@ -27,7 +53,10 @@
         "directory": "dataset/learnext_period_p1",
         "style": "tensors",
         "batch_size": 128,
-        "train_val_split": [0.7, 0.3]
+        "train_val_split": [
+            0.7,
+            0.3
+        ]
     },
     "loss_fn": {
         "RelativeMSELoss": {
@@ -35,7 +64,8 @@
         }
     },
     "optimizer": {
-        "Adam": { "lr": 0.00001
+        "Adam": {
+            "lr": 1e-05
         }
     },
     "scheduler": {
@@ -44,5 +74,5 @@
         }
     },
     "num_epochs": 40000,
-    "seed": 0
+    "seed": 1
 }
