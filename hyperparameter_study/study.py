@@ -110,7 +110,6 @@ def run_boundary_problem_hpar(problem_file: Path, results_dir: Path) -> tuple[De
     
     mesh_quality_array = mesh_quality_rollout(net, test_dset, 
                                               quality_measure="scaled_jacobian", batch_size=64)
-    deeponet_min_mq = mesh_quality_array.min(axis=1)
     deeponet_min_mq = np.min(mesh_quality_array, axis=1)
     biharm_min_mq = np.loadtxt("output/data/biharm_min_mq.csv")
     diff_mq = biharm_min_mq - deeponet_min_mq
@@ -182,11 +181,6 @@ def main():
     with open(BASE_PROBLEM_FILE_PATH, "r") as infile:
         base_problem_dict = json.load(infile)
 
-    num_combinations = len(config_dict["widths"]) * len(config_dict["depths"]) * len(config_dict["basis_sizes"])
-    num_runs = num_combinations * config_dict["runs_per_combination"]
-    study_time = num_runs * config_dict["expected_time_per_run"]
-
-
     print()
 
     widths = config_dict["widths"]
@@ -195,8 +189,9 @@ def main():
     runs_per_combination = config_dict["runs_per_combination"]
     epochs_per_run = config_dict["epochs_per_run"]
     expected_time_per_epoch = config_dict["expected_time_per_epoch"]
-    expected_time_per_run = expected_time_per_epoch * epochs_per_run
+    num_combinations = len(widths) * len(depths) * len(basis_sizes)
     num_runs = num_combinations * runs_per_combination
+    expected_time_per_run = expected_time_per_epoch * epochs_per_run
     study_time = num_runs * expected_time_per_run
     
     print(f"{num_combinations = }")

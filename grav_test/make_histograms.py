@@ -5,7 +5,7 @@ import matplotlib as mpl
 from pathlib import Path
 FIGURES_DIR = Path("grav_test/figures")
 
-def make_histograms(biharm_smq_arr: np.ndarray, harm_smq_arr: np.ndarray, don_smq_arr: np.ndarray) -> plt.Figure:
+def make_histograms(biharm_smq_arr: np.ndarray, harm_smq_arr: np.ndarray, don_smq_arr: np.ndarray) -> tuple[plt.Figure, plt.Axes]:
 
     custom_bins = list(np.linspace(-1, 0, 11)[:-1]) + list(np.linspace(0, 1, 41))
 
