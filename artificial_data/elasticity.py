@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     print(fluid_mesh.num_vertices())
     # Represent the solid data on fluid mesh
-    from make_mesh import translate_function
+    from translation import translate_function
 
     uh_fluid = translate_function(from_u=uh,
                                   from_facet_f=solid_boundaries,

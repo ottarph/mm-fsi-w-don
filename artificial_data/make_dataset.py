@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 from os import PathLike
-from make_mesh import translate_function
+from translation import translate_function
 
 
 def convert_dataset(path: PathLike, harm_file: df.XDMFFile, biharm_file: df.XDMFFile,
