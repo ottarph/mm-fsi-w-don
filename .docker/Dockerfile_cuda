@@ -270,9 +270,34 @@ RUN python3 -m pip install --no-cache-dir meshio
 WORKDIR /
 
 
+FROM cuda-fenics-end-user-gmsh AS cuda-fenics-adjoint
+
+# Install dolfin-adjoint
+RUN python3 -m pip install git+https://github.com/dolfin-adjoint/dolfin-adjoint.git
 
 
-FROM cuda-fenics-end-user-gmsh AS cuda-fenics-pytorch
+
+## Install Ipopt
+WORKDIR /usr/local
+RUN git clone https://github.com/coin-or/Ipopt.git
+RUN git clone https://github.com/coin-or-tools/ThirdParty-Mumps.git
+RUN cd ThirdParty-Mumps && ./get.Mumps && ./configure --prefix=/usr/local && make && make install
+RUN cd Ipopt && mkdir build && cd build && ../configure --without-hsl --without-asl --with-lapack --with-mumps --prefix=/usr/local && make && make test && make install
+
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+ENV PATH=/usr/local/bin:$PATH
+ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+
+
+# Install cyipopt
+RUN /bin/bash -l -c "pip3 install Cython"
+RUN /bin/bash -l -c "pip3 install six"
+
+RUN /bin/bash -l -c "pip3 install git+https://github.com/mechmotum/cyipopt.git"
+
+
+
+FROM cuda-fenics-adjoint AS cuda-fenics-pytorch
 
 RUN python3 -m pip install torch torchvision torchaudio
 
@@ -286,5 +311,9 @@ RUN python3 -m pip install vtk
 RUN python3 -m pip install pyvista
 
 # Install everything else
-RUN python3 -m pip install numpy matplotlib ipykernel tqdm pytest pyyaml pandas
+RUN python3 -m pip install numpy matplotlib ipykernel tqdm pytest pyyaml pandas dill
+
+# gmshnics has not been updated to ufl_legacy, so we skip it
+# # Install gmshnics
+# RUN python3 -m pip install git+https://github.com/MiroK/gmshnics.git
 
