@@ -209,8 +209,18 @@ if __name__ == "__main__":
     fig.savefig(FIG_DIR / "conv_quantiles.pdf")
 
     fig, axs = make_mesh_quality_quantiles_plot(full_min_mq_arr, qs, figsize=(12,5))
+    fig.savefig(FIG_DIR / "mesh_quality_quantiles_shorter.pdf")
+
+    fig_args = {"figsize": (6.4, 3.2)}
+    sp_adj_kws = {"left": 0.1, "bottom": 0.15, "right": 0.97, "top": 0.95}
+
+    fig, axs = make_mesh_quality_quantiles_plot(full_min_mq_arr, qs, **fig_args)
+    fig.subplots_adjust(**sp_adj_kws)
     fig.savefig(FIG_DIR / "mesh_quality_quantiles_short.pdf")
 
+    fig, axs = make_conv_quantiles_plot(full_val_hist_arr, qs, **fig_args)
+    fig.subplots_adjust(**sp_adj_kws)
+    fig.savefig(FIG_DIR / "conv_quantiles_short.pdf")
 
 
     try:
