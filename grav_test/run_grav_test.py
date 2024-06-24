@@ -173,9 +173,24 @@ for k in range(3):
     biharm_signed_mq_arr[k,:] = signed_biharm_mq
     don_signed_mq_arr[k,:] = signed_don_mq
 
+np.save("grav_test/data/harm_signed_mq_arr.npy", harm_signed_mq_arr)
+np.save("grav_test/data/biharm_signed_mq_arr.npy", biharm_signed_mq_arr)
+np.save("grav_test/data/don_signed_mq_arr.npy", don_signed_mq_arr)
 
-from grav_test.make_histograms import make_histograms
+from grav_test.make_histograms import make_histograms, make_histograms_short, make_histograms_shorter, make_histograms_short_allpos, make_histograms_shorter_allpos
+
 fig, axs = make_histograms(biharm_signed_mq_arr, harm_signed_mq_arr, don_signed_mq_arr)
-
 fig.savefig("grav_test/figures/grav_test_histograms.pdf")
+
+fig, axs = make_histograms_short(biharm_signed_mq_arr, don_signed_mq_arr)
+fig.savefig("grav_test/figures/grav_test_histograms_short.pdf")
+
+fig, axs = make_histograms_shorter(biharm_signed_mq_arr, don_signed_mq_arr)
+fig.savefig("grav_test/figures/grav_test_histograms_shorter.pdf")
+
+fig, axs = make_histograms_short_allpos(biharm_signed_mq_arr, don_signed_mq_arr)
+fig.savefig("grav_test/figures/grav_test_histograms_short_allpos.pdf")
+
+fig, axs = make_histograms_shorter_allpos(biharm_signed_mq_arr, don_signed_mq_arr)
+fig.savefig("grav_test/figures/grav_test_histograms_shorter_allpos.pdf")
 
