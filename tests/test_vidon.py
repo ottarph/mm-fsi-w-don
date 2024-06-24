@@ -33,7 +33,7 @@ def test_split_additive():
     return
 
 def test_VIDONMHAHead():
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dset = FEniCSDataset(x_data, y_data, 
         x_transform=ToDType("default"),
         y_transform=ToDType("default"))
@@ -54,7 +54,7 @@ def test_VIDONMHAHead():
 
 
 def test_VIDONMHA():
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dset = FEniCSDataset(x_data, y_data, 
         x_transform=ToDType("default"),
         y_transform=ToDType("default"))
@@ -74,7 +74,7 @@ def test_VIDONMHA():
 
 
 def test_VIDON():
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dset = FEniCSDataset(x_data, y_data, 
         x_transform=ToDType("default"),
         y_transform=ToDType("default"))
@@ -98,7 +98,7 @@ def test_VIDON():
     return
 
 def test_VIDON_deeponet():
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dset = FEniCSDataset(x_data, y_data, 
         x_transform=ToDType("default"),
         y_transform=ToDType("default"))

@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 
 def test_coordinate_insert():
 
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
@@ -67,7 +67,7 @@ def test_random_permute_encoder():
 
 def test_filter_encoders():
 
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
@@ -93,7 +93,7 @@ def test_filter_encoders():
 
 def test_inner_boundary_filter():
 
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
@@ -109,7 +109,7 @@ def test_inner_boundary_filter():
 
 def test_combined_encoders():
 
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
@@ -135,7 +135,7 @@ def test_combined_encoders():
 
 def test_flatten_encoder():
 
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
@@ -158,7 +158,7 @@ def test_flatten_encoder():
 
 def test_split_additive_encoder():
 
-    x_data, _ = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, _ = load_MeshData("dataset/learnext_period_p1", "folders")
 
     enc_1_dict = {
         "MLP": {"widths": [2, 64], "activation": "ReLU"},

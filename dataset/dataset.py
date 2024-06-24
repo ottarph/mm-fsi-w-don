@@ -306,6 +306,8 @@ def load_MeshData(directory: PathLike, style: Literal["XDMF", "folders", "tensor
     output_dict = info_dict["output"]
 
     if style == "XDMF":
+        raise Exception("""Functionality for working directly with XDMF-files is removed, since
+                        it is very slow and the data takes a lot of space.""")
 
         x_data = MeshDataXDMF(directory / "input.xdmf", input_dict["type"],
                               input_dict["dim"], input_dict["degree"], 

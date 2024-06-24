@@ -126,7 +126,7 @@ def test_vidon_builder():
 
 def test_encoder_builder():
     from dataset.dataset import load_MeshData, FEniCSDataset, ToDType
-    x_data, y_data = load_MeshData("dataset/artificial_learnext", "XDMF")
+    x_data, y_data = load_MeshData("dataset/learnext_period_p1", "folders")
     dataset = FEniCSDataset(x_data, y_data, 
                     x_transform=ToDType("default"),
                     y_transform=ToDType("default"))
