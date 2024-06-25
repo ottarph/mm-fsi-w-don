@@ -54,11 +54,7 @@ def pred_problem(problem_file: Path, dataset_path: Path, branch_state_dict_path:
     mask_tensor = y_data.create_mask_function()
     evaluation_points = y_data.dof_coordinates[None,...].to(dtype=torch.get_default_dtype())
 
-    from neuraloperators.encoders import BoundaryFilterEncoder, CoordinateInsertEncoder, SequentialEncoder, RandomPermuteEncoder, FlattenEncoder, InnerBoundaryFilterEncoder
-    # If using DeepSets branch network
-    # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), BoundaryFilterEncoder(x_data), RandomPermuteEncoder(-2, 2))
-    # branch_encoder = SequentialEncoder(CoordinateInsertEncoder(x_data), InnerBoundaryFilterEncoder(x_data), RandomPermuteEncoder(-2, 2))
-    # If using MLP branch network
+    from neuraloperators.encoders import SequentialEncoder, FlattenEncoder, InnerBoundaryFilterEncoder
     branch_encoder = SequentialEncoder(InnerBoundaryFilterEncoder(x_data), FlattenEncoder(-2))
 
     net.mask_tensor = mask_tensor # Make sure mask tensor is for correct dataset, not the one trained on, which is loaded in with the state-dict.
@@ -78,10 +74,6 @@ def main():
     parser.add_argument("--branch-state-dict", default=Path("hyperparameter_study/best_run/branch.pt"), type=Path)
     parser.add_argument("--trunk-state-dict", default=Path("hyperparameter_study/best_run/trunk.pt"), type=Path)
     parser.add_argument("--save-file", default=Path("output/fenics/best_run.pred.xdmf"), type=Path)
-    # parser.add_argument("--problem-file", default=Path("latest_results/problem.json"), type=Path)
-    # parser.add_argument("--branch-state-dict", default=Path("latest_results/branch.pt"), type=Path)
-    # parser.add_argument("--trunk-state-dict", default=Path("latest_results/trunk.pt"), type=Path)
-    # parser.add_argument("--save-file", default=Path("output/fenics/latest.pred.xdmf"), type=Path)
     parser.add_argument("--dataset", default=Path("dataset/learnext_period_p1"), type=Path)
     args = parser.parse_args()
 

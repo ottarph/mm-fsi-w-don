@@ -142,8 +142,8 @@ def run_boundary_problem(problem_file: Path, results_dir: Path,
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--problem-file", default=Path("problems/default.json"), type=Path)
-    parser.add_argument("--results-dir", default=Path("results/default"), type=Path)
+    parser.add_argument("--problem-file", default=Path("hyperparameter_study/best_run/problem.json"), type=Path)
+    parser.add_argument("--results-dir", default=Path("output/fenics/default"), type=Path)
     parser.add_argument("--save-xdmf", default=True, action=argparse.BooleanOptionalAction)
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()

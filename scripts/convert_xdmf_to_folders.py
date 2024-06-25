@@ -94,5 +94,5 @@ def convert_XDMF_dataset_to_folders(dataset_path: PathLike) -> None:
 
 
 if __name__ == "__main__":
-    dataset_path = "dataset/artificial_learnext"
+    dataset_path = "dataset/xdmf_dataset"
     convert_XDMF_dataset_to_folders(dataset_path)
