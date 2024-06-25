@@ -255,6 +255,35 @@ def main():
 
     fig.savefig("output/figures/best_run_min_mesh_mq.pdf")
 
+
+    # Save the coordinates of sensor dofs
+
+    def inner_boundary(x, on_boundary):
+        if on_boundary:
+            eps = 1e-3
+            if df.near(x[1], 0, eps) or df.near(x[1], 0.41, eps) \
+                or df.near(x[0], 0, eps) or df.near(x[0], 2.5, eps):
+                return False
+            else:
+                return True
+        else:
+            return False
+
+    mesh_path = Path("dataset/learnext_period_p1/output.xdmf")
+    mesh = df.Mesh()
+    xdmf_file = df.XDMFFile(str(mesh_path))
+    xdmf_file.read(mesh)
+
+    V_CG1 = df.FunctionSpace(mesh, "CG", 1)
+    u_cg1 = df.Function(V_CG1)
+
+    bc = df.DirichletBC(V_CG1, df.Constant(1), inner_boundary)
+    bc.apply(u_cg1.vector())
+
+    ids = np.flatnonzero(u_cg1.vector().get_local())
+    np.savetxt("output/data/sensor_dof_coords.cg1.txt", V_CG1.tabulate_dof_coordinates()[ids])
+    
+
     with open(LOG_FILE_PATH, "a") as outfile:
         outfile.write(
             f"{datetime.datetime.now().strftime(r'%Y_%m_%d-%H_%M')}: Finish.\n\n"

@@ -24,7 +24,7 @@ V = df.VectorFunctionSpace(msh, "CG", p)
 V_scal = df.FunctionSpace(msh, "CG", p)
 
 
-dof_coords_file_path = Path(f"output/data/learnext_inner_dof_coords.cg1.txt")
+dof_coords_file_path = Path(f"output/data/sensor_dof_coords.cg1.txt")
 dof_coords = np.loadtxt(dof_coords_file_path)
 
 results_dir = Path("hyperparameter_study/best_run")
