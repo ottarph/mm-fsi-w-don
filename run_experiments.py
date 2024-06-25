@@ -21,6 +21,8 @@ def main():
     sp.run(["python3", "random_initialization/random_initialization_study.py"], env=env)
     sp.run(["python3", "random_initialization/make_plots.py"], env=env)
 
+    sp.run(["python3", "grav_test/run_grav_test.py"], env=env)
+
     return
 
 if __name__ == "__main__":

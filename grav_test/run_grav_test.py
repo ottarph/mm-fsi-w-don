@@ -8,7 +8,7 @@ import json
 
 from pathlib import Path
 
-datapath = Path("grav_test/data/max_deformations_redo.xdmf")
+datapath = Path("grav_test/data/max_deformations.xdmf")
 
 datafile = df.XDMFFile(str(datapath))
 
@@ -24,7 +24,7 @@ V = df.VectorFunctionSpace(msh, "CG", p)
 V_scal = df.FunctionSpace(msh, "CG", p)
 
 
-dof_coords_file_path = Path(f"grav_test/data/learnext_inner_dof_coords.cg1.txt")
+dof_coords_file_path = Path(f"output/data/learnext_inner_dof_coords.cg1.txt")
 dof_coords = np.loadtxt(dof_coords_file_path)
 
 results_dir = Path("hyperparameter_study/best_run")
@@ -158,5 +158,5 @@ np.save("grav_test/data/don_signed_mq_arr.npy", don_signed_mq_arr)
 from grav_test.make_histograms import make_histograms_shorter_allpos
 
 fig, axs = make_histograms_shorter_allpos(biharm_signed_mq_arr, don_signed_mq_arr)
-fig.savefig("grav_test/figures/grav_test_histograms_shorter_allpos.pdf")
+fig.savefig("output/figures/grav_test_histograms.pdf")
 
