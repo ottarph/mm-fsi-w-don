@@ -52,7 +52,7 @@ FSI_param['nyf'] = 1.0e-3
 FSI_param['t'] = 0.0
 FSI_param['deltat'] = 0.0025
 # FSI_param['deltat'] = 0.01
-FSI_param['T'] = 15.1
+FSI_param['T'] = 15.05
 FSI_param["save_int"] = 0.01
 
 FSI_param['displacement_point'] = df.Point((0.6, 0.2))
@@ -80,7 +80,7 @@ FSI_param["save_snapshots_dir"] = str(Path("output/fsi_run_bih/snapshots"))
 FSI_param["save_data_on"] = True
 FSI_param["save_states_on"] = True
 FSI_param["save_snapshot_on"] = True
-FSI_param["warmstart_state_dir"] = str(Path("deeponet_extension_data/warmstart_state"))
+FSI_param["warmstart_state_dir"] = str(Path("deeponet_extension/data/warmstart_state"))
 FSI_param["warmstart_test_dir"] = str(Path("output/fsi_run_bih/warmstart_test"))
 WARMSTART = True
 # df.set_log_active(False)

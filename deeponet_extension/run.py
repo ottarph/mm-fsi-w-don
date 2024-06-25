@@ -52,7 +52,7 @@ FSI_param['nyf'] = 1.0e-3
 FSI_param['t'] = 0.0
 FSI_param['deltat'] = 0.0025
 # FSI_param['deltat'] = 0.01
-FSI_param['T'] = 15.1
+FSI_param['T'] = 15.05
 FSI_param["save_int"] = 0.01
 
 FSI_param['displacement_point'] = df.Point((0.6, 0.2))
@@ -66,7 +66,7 @@ FSI_param['boundary_cond'] = df.Expression(("(t < 2)?(1.5*Ubar*4.0*x[1]*(0.41 -x
 
 from deeponet_extension.extension import DeepONetExtension
 DEEPONET_DIR = Path("deeponet_extension/models/best_run")
-extension_operator = DeepONetExtension(fluid_domain, DEEPONET_DIR, T_switch=0.0, torch_device="gpu")
+extension_operator = DeepONetExtension(fluid_domain, DEEPONET_DIR, T_switch=0.0, torch_device="cuda")
 
 # from FSIsolver.extension_operator.extension import Biharmonic
 # extension_operator = Biharmonic(fluid_domain)
@@ -80,7 +80,7 @@ FSI_param["save_snapshots_dir"] = str(Path("output/fsi_run_don/snapshots"))
 FSI_param["save_data_on"] = True
 FSI_param["save_states_on"] = True
 FSI_param["save_snapshot_on"] = True
-FSI_param["warmstart_state_dir"] = str(Path("deeponet_extension_data/warmstart_state"))
+FSI_param["warmstart_state_dir"] = str(Path("deeponet_extension/data/warmstart_state"))
 FSI_param["warmstart_test_dir"] = str(Path("output/fsi_run_don/warmstart_test"))
 WARMSTART = True
 # df.set_log_active(False)

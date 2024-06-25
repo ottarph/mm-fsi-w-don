@@ -82,7 +82,6 @@ class DeepONetExtension(ExtensionOperator):
 
         return
 
-    @ExtensionOperator.timings_extension
     def extend(self, boundary_conditions, params):
         """ Torch-corrected extension of boundary_conditions (Function on self.mesh) to the interior """
 

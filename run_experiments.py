@@ -11,7 +11,7 @@ def main():
     else:
         env["PYTHONPATH"] = "."
 
-    sp.run(["python3", "scripts/download_data.py"], env=env)
+    sp.run(["python3", "scripts/download_data.py"], env=env, check=True)
 
 
     # Path("output/data").mkdir(parents=True, exist_ok=True)
@@ -32,13 +32,13 @@ def main():
     # sp.run(["python3", "grav_test/run_grav_test.py"], env=env)
 
 
-    sp.run(["python3", "scripts/convert_model_for_fsi.py"], env=env)
+    sp.run(["python3", "scripts/convert_model_for_fsi.py"], env=env, check=True)
 
 
-    sp.run(["python3", "deeponet_extension/run.py"], env=env)
-    sp.run(["python3", "deeponet_extension/run_biharm.py"], env=env)
+    sp.run(["python3", "deeponet_extension/run.py"], env=env, check=True)
+    sp.run(["python3", "deeponet_extension/run_biharm.py"], env=env, check=True)
     
-    sp.run(["python3", "deeponet_extension/plot_quantities.py"], env=env)
+    sp.run(["python3", "deeponet_extension/plot_quantities.py"], env=env, check=True)
 
     return
 
