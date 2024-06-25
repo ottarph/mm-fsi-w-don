@@ -2,10 +2,10 @@
     "num_runs": 20,
     "epochs_per_run": 40000,
     "expected_time_per_epoch": 0.05,
-    "RESULTS_DIR": "random_initialization/new_study/results/runs",
-    "FIGURES_DIR": "random_initialization/new_study/figures",
-    "DATA_DIR": "random_initialization/new_study/results/data",
+    "RESULTS_DIR": "random_initialization/study/results/runs",
+    "FIGURES_DIR": "random_initialization/study/figures",
+    "DATA_DIR": "random_initialization/study/results/data",
     "STAGING_DIR": "random_initialization/staging",
-    "BEST_RUN_DIR": "random_initialization/new_study/best_run",
-    "LOG_FILE": "random_initialization/new_study/log.txt"
+    "BEST_RUN_DIR": "random_initialization/study/best_run",
+    "LOG_FILE": "random_initialization/study/log.txt"
 }

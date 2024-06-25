@@ -164,88 +164,29 @@ def make_single_conv_plot(val_hist_arr: np.ndarray, **fig_args) -> tuple[plt.Fig
 
 
 if __name__ == "__main__":
-
-    DATA_DIR = Path("random_initialization/new_study/results/data")
-    FIG_DIR = Path("random_initialization/new_study/figures")
-
-
-    selection = [0, 1, 2, 3, 4, 5, 6,    8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-    bad_run   = [                     7                                              ]
-    full_min_mq_arr, full_val_hist_arr = extract_run_selection(DATA_DIR, range(20))
-    selected_min_mq_arr, selected_val_hist_arr = extract_run_selection(DATA_DIR, selection)
-    bad_selected_min_mq_arr, bad_selected_val_hist_arr = extract_run_selection("random_initialization/results/data", bad_run)
-    bad_selected_min_mq_arr, bad_selected_val_hist_arr = bad_selected_min_mq_arr[0,:], bad_selected_val_hist_arr[0,:]
-
-    fig, axs = make_mesh_quality_quartiles_plot(selected_min_mq_arr)
-    fig.savefig(FIG_DIR / "selected_mesh_quality_quartiles.pdf")
-
-    fig, axs = make_mesh_quality_quartiles_plot(selected_min_mq_arr, figsize=(12,5))
-    fig.savefig(FIG_DIR / "selected_mesh_quality_quartiles_short.pdf")
-
-    fig, axs = make_conv_quartiles_plot(selected_val_hist_arr)
-    fig.savefig(FIG_DIR / "selected_convergence_quartiles.pdf")
+    import json
+    
+    CONFIG_PATH = "random_initialization/study_config.json"
+    with open(CONFIG_PATH, "r") as infile:
+        config_dict = json.load(infile)
+    DATA_DIR = Path(config_dict["DATA_DIR"])
+    FIG_DIR = Path("output/figures")
 
 
-    fig, axs = make_single_mesh_quality_plot(bad_selected_min_mq_arr)
-    fig.savefig(FIG_DIR / "bad_selected_mesh_quality.pdf")
+    min_mq_arr, val_hist_arr = extract_run_selection(DATA_DIR, range(20))
 
-    fig, axs = make_single_mesh_quality_plot(bad_selected_min_mq_arr, figsize=(12,5))
-    fig.savefig(FIG_DIR / "bad_selected_mesh_quality_short.pdf")
-
-    fig, axs = make_single_conv_plot(bad_selected_val_hist_arr)
-    fig.savefig(FIG_DIR / "bad_selected_convergence.pdf")
-
-    fig, axs = make_mesh_quality_quartiles_plot(full_min_mq_arr, figsize=(12,5))
-    fig.savefig(FIG_DIR / "mq_test.pdf")
-
-    fig, axs = make_conv_quartiles_plot(full_val_hist_arr)
-    fig.savefig(FIG_DIR / "conv_test.pdf")
 
     qs = np.array([0.1, 0.3, 0.5, 0.7, 0.9])
-    fig, axs = make_mesh_quality_quantiles_plot(full_min_mq_arr, qs)
-    fig.savefig(FIG_DIR / "mesh_quality_quantiles.pdf")
-
-    fig, axs = make_conv_quantiles_plot(full_val_hist_arr, qs)
-    fig.savefig(FIG_DIR / "conv_quantiles.pdf")
-
-    fig, axs = make_mesh_quality_quantiles_plot(full_min_mq_arr, qs, figsize=(12,5))
-    fig.savefig(FIG_DIR / "mesh_quality_quantiles_shorter.pdf")
 
     fig_args = {"figsize": (6.4, 3.2)}
     sp_adj_kws = {"left": 0.1, "bottom": 0.15, "right": 0.97, "top": 0.95}
 
-    fig, axs = make_mesh_quality_quantiles_plot(full_min_mq_arr, qs, **fig_args)
+    fig, axs = make_mesh_quality_quantiles_plot(min_mq_arr, qs, **fig_args)
     fig.subplots_adjust(**sp_adj_kws)
-    fig.savefig(FIG_DIR / "mesh_quality_quantiles_short.pdf")
+    fig.savefig(FIG_DIR / "random_init_mesh_quality_quantiles.pdf")
 
-    fig, axs = make_conv_quantiles_plot(full_val_hist_arr, qs, **fig_args)
+    fig, axs = make_conv_quantiles_plot(val_hist_arr, qs, **fig_args)
     fig.subplots_adjust(**sp_adj_kws)
-    fig.savefig(FIG_DIR / "conv_quantiles_short.pdf")
+    fig.savefig(FIG_DIR / "random_init_conv_quantiles.pdf")
 
-
-    try:
-        deeponet_min_mq_arr = np.loadtxt("random_initialization/results/data/dno_min_mq.txt")
-
-    except:
-        biharm_min_mq = np.loadtxt("output/data/biharm_min_mq.csv")
-        noise = np.random.lognormal(mean=-4, sigma=0.8, size=(biharm_min_mq.shape[0], 10))
-        deeponet_min_mq_arr = (biharm_min_mq[:,None] - noise).T
-        print(f"{deeponet_min_mq_arr.shape = }")
-
-    fig, axs = make_mesh_quality_quartiles_plot(deeponet_min_mq_arr, figsize=(12,5))
-    fig.savefig("random_initialization/figures/mq_test.pdf")
-
-    try:
-        val_hist_arr = np.loadtxt("random_initialization/results/data/val_hist.txt")
-
-    except:
-        T = 40000
-        epochs = np.arange(T, dtype=np.float64)
-        base_conv = np.loadtxt("results/zeta/data/val.txt")
-        noise = np.random.lognormal(mean=-2, sigma=0.5, size=(len(epochs), 10))
-        val_hist_arr = (base_conv[:,None] + noise).T
-        print(f"{val_hist_arr.shape = }")
-
-    fig, axs = make_conv_quartiles_plot(val_hist_arr)
-    fig.savefig("random_initialization/figures/conv_test.pdf")
 

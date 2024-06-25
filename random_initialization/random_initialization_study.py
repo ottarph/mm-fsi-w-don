@@ -235,14 +235,33 @@ def main():
     np.savetxt(DATA_DIR / "dno_min_mq.txt", deeponet_min_mq_arr)
     np.savetxt(DATA_DIR / "val_hist.txt", val_hist_arr)
 
-    FIGURES_DIR = Path(config_dict["FIGURES_DIR"])
-    from random_initialization.make_plots import make_mesh_quality_plot, make_conv_plot
 
-    mq_fig, mq_axs = make_mesh_quality_plot(deeponet_min_mq_arr)
-    mq_fig.savefig(FIGURES_DIR / "mesh_quality_quantiles.pdf")
+    # Save the coordinates of sensor dofs
 
-    conv_fig, conv_axs = make_conv_plot(val_hist_arr)
-    conv_fig.savefig(FIGURES_DIR / "convergence_quantiles.pdf")
+    def inner_boundary(x, on_boundary):
+        if on_boundary:
+            eps = 1e-3
+            if df.near(x[1], 0, eps) or df.near(x[1], 0.41, eps) \
+                or df.near(x[0], 0, eps) or df.near(x[0], 2.5, eps):
+                return False
+            else:
+                return True
+        else:
+            return False
+
+    mesh_path = Path("dataset/learnext_period_p1/output.xdmf")
+    mesh = df.Mesh()
+    xdmf_file = df.XDMFFile(str(mesh_path))
+    xdmf_file.read(mesh)
+
+    V_CG1 = df.FunctionSpace(mesh, "CG", 1)
+    u_cg1 = df.Function(V_CG1)
+
+    bc = df.DirichletBC(V_CG1, df.Constant(1), inner_boundary)
+    bc.apply(u_cg1.vector())
+
+    ids = np.flatnonzero(u_cg1.vector().get_local())
+    np.savetxt("output/data/learnext_inner_dof_coords.cg1.txt", V_CG1.tabulate_dof_coordinates()[ids])
 
     return
 
