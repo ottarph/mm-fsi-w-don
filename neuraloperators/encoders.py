@@ -54,24 +54,6 @@ class FlattenEncoder(Encoder):
     def __repr__(self) -> str:
         return f"FlattenEncoder(start_dim={self.start_dim.item()})"
     
-class SplitAdditiveEncoder(Encoder):
-
-    def __init__(self, encoder_1: nn.Module, encoder_2: nn.Module, length_1: int, length_2: int):
-        super().__init__()
-
-        self.encoder_1 = encoder_1
-        self.encoder_2 = encoder_2
-
-        self.length_1 = length_1
-        self.length_2 = length_2
-
-        return
-    
-    def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        return super().__call__(x)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.encoder_1(x[...,:self.length_1]) + self.encoder_2(x[...,self.length_1:])
 
 
 class TensorPrependEncoder(Encoder):
@@ -245,32 +227,3 @@ class ExtractBoundaryDofEncoder(FixedFilterEncoder):
         super().__init__(filter=indices, dim=-2, unit_shape_length=2)
 
         return
-    
-
-class RandomPermuteEncoder(FilterEncoder):
-
-    def __init__(self, dim: int, unit_shape_length: int):
-        super().__init__(dim=dim, unit_shape_length=unit_shape_length)
-
-    def filter(self, x: torch.Tensor) -> torch.LongTensor:
-        return torch.randperm(x.shape[self.dim], device=x.device)
-    
-    def __repr__(self) -> str:
-        return f"RandomPermuteEncoder(dim={self.dim.item()})"
-    
-    
-class RandomSelectEncoder(FilterEncoder):
-
-    def __init__(self, dim: int, unit_shape_length: int, num_inds: int):
-        super().__init__(dim=dim, unit_shape_length=unit_shape_length)
-        self.register_buffer("num_inds", torch.tensor(num_inds, dtype=torch.long))
-        self.num_inds: torch.LongTensor
-
-        return
-
-    def filter(self, x: torch.Tensor) -> torch.LongTensor:
-        return torch.randperm(x.shape[self.dim], device=x.device)[:self.num_inds]
-    
-    def __repr__(self) -> str:
-        return f"RandomSelectEncoder(dim={self.dim.item()}, num_inds={self.num_inds.item()})"
-

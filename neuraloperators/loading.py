@@ -6,8 +6,6 @@ import json
 import neuraloperators.networks
 import neuraloperators.deeponet
 import neuraloperators.encoders
-import neuraloperators.deepsets
-import neuraloperators.vidon
 
 import dataset.dataset
 
@@ -35,32 +33,6 @@ class ModelBuilder:
         widths = mlp_dict["widths"]
         return neuraloperators.networks.MLP(widths, activation)
     
-    def DeepSets(deepsets_dict: dict) -> neuraloperators.deepsets.DeepSets:
-
-        representer = build_model(deepsets_dict["representer"])
-        processor = build_model(deepsets_dict["processor"])
-        return neuraloperators.deepsets.DeepSets(representer, processor, deepsets_dict["reduction"])
-    
-    def SplitAdditive(split_add_dict: dict) -> neuraloperators.networks.SplitAdditive:
-        model_1 = build_model(split_add_dict["model_1"])
-        model_2 = build_model(split_add_dict["model_2"])
-        return neuraloperators.networks.SplitAdditive(model_1, model_2, split_add_dict["length_1"], split_add_dict["length_2"])
-    
-    def VIDONMHA(mha_dict: dict) -> neuraloperators.vidon.VIDONMHA:
-        if "weight_activation" in mha_dict.keys():
-            mha_dict["weight_activation"] = build_model({"activation": mha_dict["weight_activation"]})
-        if "value_activation" in mha_dict.keys():
-            mha_dict["value_activation"] = build_model({"activation": mha_dict["value_activation"]})
-            
-        return neuraloperators.vidon.VIDONMHA(**mha_dict)
-    
-    def VIDON(vidon_dict: dict) -> neuraloperators.vidon.VIDON:
-
-        split_additive = build_model({"SplitAdditive": vidon_dict["SplitAdditive"]})
-        mha = build_model({"VIDONMHA": vidon_dict["MultiHeadAttention"]})
-        processor = build_model(vidon_dict["Processor"])
-
-        return neuraloperators.vidon.VIDON(split_additive, mha, processor)
 
 def build_model(model_dict: dict) -> nn.Module:
 
@@ -182,21 +154,11 @@ class EncoderBuilder:
     def InnerBoundaryFilterEncoder(mesh_data: dataset.dataset.MeshData, boundary_filter_dict: dict) -> neuraloperators.encoders.InnerBoundaryFilterEncoder:
         return neuraloperators.encoders.InnerBoundaryFilterEncoder(mesh_data=mesh_data, **boundary_filter_dict)
 
-    def RandomSelectEncoder(mesh_data: dataset.dataset.MeshData, rand_select_dict: dict) -> neuraloperators.encoders.RandomSelectEncoder:
-        return neuraloperators.encoders.RandomSelectEncoder(**rand_select_dict)
-    
-    def RandomPermuteEncoder(mesh_data: dataset.dataset.MeshData, rand_perm_dict: dict) -> neuraloperators.encoders.RandomPermuteEncoder:
-        return neuraloperators.encoders.RandomPermuteEncoder(**rand_perm_dict)
-
     def FlattenEncoder(mesh_data: dataset.dataset.MeshData, flatten_dict: dict) -> neuraloperators.encoders.FlattenEncoder:
         return  neuraloperators.encoders.FlattenEncoder(**flatten_dict)
 
     def SequentialEncoder(mesh_data: dataset.dataset.MeshData, encoder_dicts: list[dict]) -> neuraloperators.encoders.SequentialEncoder:
         return neuraloperators.encoders.SequentialEncoder(*(build_encoder(mesh_data, encoder_dict) for encoder_dict in encoder_dicts))
-    
-    def SplitAdditiveEncoder(mesh_data: dataset.dataset.MeshData, split_enc_dict: dict) -> neuraloperators.encoders.SplitAdditiveEncoder:
-        return neuraloperators.encoders.SplitAdditiveEncoder(build_model(split_enc_dict["encoder_1"]), build_model(split_enc_dict["encoder_2"]),
-                                                             split_enc_dict["length_1"], split_enc_dict["length_2"])
     
     def IdentityEncoder(mesh_data: dataset.dataset.MeshData, ident_dict: dict) -> neuraloperators.encoders.IdentityEncoder:
         return neuraloperators.encoders.IdentityEncoder(**ident_dict)
