@@ -14,6 +14,10 @@ def main():
     sp.run(["mv", "TMP_DATA_DIR/grav_test/max_deformations.xdmf", "grav_test/data"])
     sp.run(["mv", "TMP_DATA_DIR/grav_test/max_deformations.h5", "grav_test/data"])
 
+    Path("deeponet_extension/data").mkdir(parents=True, exist_ok=True)
+    sp.run(["mv", "TMP_DATA_DIR/mesh", "deeponet_extension/data/mesh"])
+    sp.run(["mv", "TMP_DATA_DIR/warmstart/state", "deeponet_extension/data/warmstart_state"])
+
     sp.run(["rm", "-r", "TMP_DATA_DIR"])
 
     return

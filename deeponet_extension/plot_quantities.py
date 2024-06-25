@@ -9,7 +9,6 @@ plt.rc('axes', labelsize=14)
 
 
 
-# DATA_BIH_DIR = Path("../deeponet-learnext-fsi/deeponet_extension/output/run2biharm/data")
 DATA_DON_DIR = Path("output/fsi_run_don/data")
 DATA_BIH_DIR = Path("output/fsi_run_bih/data")
 FIG_DIR = Path("output/figures")

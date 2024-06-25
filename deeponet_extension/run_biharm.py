@@ -9,30 +9,24 @@ import FSIsolver.fsi_solver.solver as solver
 
 
 
-# create mesh: first create mesh by running ./create_mesh/create_mesh_FSI.py
-
-MESH_GEN_DIR = Path("Output/Mesh_Generation")
+MESH_DIR = Path("deeponet_extension/data/mesh")
 
 # load mesh
 mesh = df.Mesh()
-with df.XDMFFile(str(MESH_GEN_DIR / "mesh_triangles.xdmf")) as infile:
+with df.XDMFFile(str(MESH_DIR / "mesh_triangles.xdmf")) as infile:
     infile.read(mesh)
 mvc = df.MeshValueCollection("size_t", mesh, 1)
 mvc2 = df.MeshValueCollection("size_t", mesh, 2)
-with df.XDMFFile(str(MESH_GEN_DIR / "facet_mesh.xdmf")) as infile:
+with df.XDMFFile(str(MESH_DIR / "facet_mesh.xdmf")) as infile:
     infile.read(mvc, "name_to_read")
-with df.XDMFFile(str(MESH_GEN_DIR / "mesh_triangles.xdmf")) as infile:
+with df.XDMFFile(str(MESH_DIR / "mesh_triangles.xdmf")) as infile:
     infile.read(mvc2, "name_to_read")
 boundaries = df.cpp.mesh.MeshFunctionSizet(mesh, mvc)
 domains = df.cpp.mesh.MeshFunctionSizet(mesh,mvc2)
-# bdfile = df.File("deeponet_extension/output/boundaries.pvd")
-# bdfile << boundaries
-# bdfile = df.File("deeponet_extension/output/domains.pvd")
-# bdfile << domains
 
 
 # boundary parts
-params = np.load(MESH_GEN_DIR / "params.npy", allow_pickle='TRUE').item()
+params = np.load(MESH_DIR / "params.npy", allow_pickle='TRUE').item()
 
 params["no_slip_ids"] = ["noslip", "obstacle_fluid", "obstacle_solid"]
 
@@ -77,6 +71,8 @@ FSI_param['boundary_cond'] = df.Expression(("(t < 2)?(1.5*Ubar*4.0*x[1]*(0.41 -x
 from FSIsolver.extension_operator.extension import Biharmonic
 extension_operator = Biharmonic(fluid_domain)
 
+Path("output/fsi_run_bih").mkdir(parents=True, exist_ok=True)
+
 # save options
 FSI_param["save_data_dir"] = str(Path("output/fsi_run_bih/data"))
 FSI_param["save_state_dir"] = str(Path("output/fsi_run_bih/state"))
@@ -84,7 +80,7 @@ FSI_param["save_snapshots_dir"] = str(Path("output/fsi_run_bih/snapshots"))
 FSI_param["save_data_on"] = True
 FSI_param["save_states_on"] = True
 FSI_param["save_snapshot_on"] = True
-FSI_param["warmstart_state_dir"] = str(Path("ws_state"))
+FSI_param["warmstart_state_dir"] = str(Path("deeponet_extension_data/warmstart_state"))
 FSI_param["warmstart_test_dir"] = str(Path("output/fsi_run_bih/warmstart_test"))
 WARMSTART = True
 # df.set_log_active(False)
