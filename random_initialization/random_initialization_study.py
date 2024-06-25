@@ -81,7 +81,7 @@ def run_boundary_problem_rand(problem_file: Path, results_dir: Path) -> tuple[De
     shutil.copy(problem_file, results_dir / "problem.json")
 
 
-    N_timer = 2000
+    N_timer = 200
     x0, y0 = next(iter(train_dataloader))
     x0 = x0[0]
     x0_c = x0.to("cuda")
@@ -190,6 +190,10 @@ def main():
 
     RESULTS_DIR = Path(config_dict["RESULTS_DIR"])
     RESULTS_DIR.mkdir(exist_ok=True, parents=True)
+    Path(config_dict["BEST_RUN_DIR"]).mkdir(exist_ok=True, parents=True)
+    Path(config_dict["STAGING_DIR"]).mkdir(exist_ok=True, parents=True)
+    Path(config_dict["FIGURES_DIR"]).mkdir(exist_ok=True, parents=True)
+    Path(config_dict["DATA_DIR"]).mkdir(exist_ok=True, parents=True)
     LOG_FILE_PATH = Path(config_dict["LOG_FILE"])
 
     assert num_runs < 26

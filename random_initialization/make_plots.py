@@ -172,8 +172,9 @@ if __name__ == "__main__":
     DATA_DIR = Path(config_dict["DATA_DIR"])
     FIG_DIR = Path("output/figures")
 
+    NUM_RUNS = config_dict["num_runs"]
 
-    min_mq_arr, val_hist_arr = extract_run_selection(DATA_DIR, range(20))
+    min_mq_arr, val_hist_arr = extract_run_selection(DATA_DIR, range(NUM_RUNS))
 
 
     qs = np.array([0.1, 0.3, 0.5, 0.7, 0.9])

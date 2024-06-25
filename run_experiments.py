@@ -1,4 +1,5 @@
 import subprocess as sp
+import shutil
 from pathlib import Path
 import os
 
@@ -17,6 +18,8 @@ def main():
     sp.run(["python3", "scripts/compute_biharm_mesh_data.py", "dataset/learnext_period_p1", "output/data/biharm_min_mq.csv"], env=env)
 
     sp.run(["python3", "hyperparameter_study/study.py"], env=env)
+
+    shutil.copy("hyperparameter_study/best_run/problem.json", "random_initialization/base_problem.json")
 
     sp.run(["python3", "random_initialization/random_initialization_study.py"], env=env)
     sp.run(["python3", "random_initialization/make_plots.py"], env=env)

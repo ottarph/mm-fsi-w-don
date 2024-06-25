@@ -207,6 +207,8 @@ def main():
 
     RESULTS_DIR = Path(config_dict["RESULTS_DIR"])
     RESULTS_DIR.mkdir(exist_ok=True, parents=True)
+    Path(config_dict["BEST_RUN_DIR"]).mkdir(exist_ok=True, parents=True)
+    Path(config_dict["STAGING_DIR"]).mkdir(exist_ok=True, parents=True)
     LOG_FILE_PATH = Path(config_dict["LOG_FILE"])
 
     assert len(widths) < 10 and len(depths) < 10 and len(basis_sizes) < 10 and runs_per_combination < 26
