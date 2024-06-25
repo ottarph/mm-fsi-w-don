@@ -11,6 +11,7 @@ def main():
     else:
         env["PYTHONPATH"] = "."
 
+    sp.run(["python3", "scripts/download_data.py"], env=env)
 
     Path("output/data").mkdir(parents=True, exist_ok=True)
     Path("output/figures").mkdir(parents=True, exist_ok=True)
