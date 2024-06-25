@@ -88,7 +88,7 @@ def run_boundary_problem_hpar(problem_file: Path, results_dir: Path) -> tuple[De
     shutil.copy(problem_file, latest_results_dir / "problem.json")
 
 
-    N_timer = 2000
+    N_timer = 200
     x0, y0 = next(iter(train_dataloader))
     x0 = x0[0]
     x0_c = x0.to("cuda")
@@ -227,7 +227,7 @@ def main():
                     problem_dict["branch"]["MLP"]["widths"] = [412] + [w] * d + [p]
                     problem_dict["trunk"]["MLP"]["widths"] = [2] + [w] * d + [p]
                     problem_dict["seed"] = run
-                    problem_dict["num_epochs"] = epochs_per_run
+                    problem_dict["num_epochs"] = 2000 if (w, d, p, run) == (512, 7, 64, 0) else epochs_per_run
                     print()
                     print(f"{w = }, {d = }, {p = }, {run = }, progress {current_run} / {num_runs}")
                     with open(LOG_FILE_PATH, "a") as outfile:
