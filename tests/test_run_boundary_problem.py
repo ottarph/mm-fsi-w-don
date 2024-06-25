@@ -1,12 +1,12 @@
 
-from scripts.run_boundary_problem import run_boundary_problem
+from scripts.run_deeponet_training import run_boundary_problem
 
 from pathlib import Path
 import json
 
 def test_run_boundary_problem(tmp_path):
 
-    default_problem_path = Path("problems/default.json")
+    default_problem_path = Path("tests/default_problem.json")
     with open(default_problem_path, "r") as infile:
         default_probdict = json.loads(infile.read())
     

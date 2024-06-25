@@ -276,7 +276,7 @@ def load_deeponet_problem(problemdict: PathLike | dict) \
 
 if __name__ == "__main__":
 
-    path = Path("problems/default.json")
+    path = Path("tests/default_problem.json")
 
     deeponet, train_dataloader, val_dataloader, dset, optimizer, scheduler, loss_fn, num_epochs, mask_tensor = load_deeponet_problem(path)
 
