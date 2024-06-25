@@ -90,12 +90,6 @@ biharm_ext_file_path.with_suffix(".h5").unlink(missing_ok=True)
 biharm_ext_file = df.XDMFFile(str(biharm_ext_file_path))
 biharm_ext_file.write(msh)
 
-harm_ext_file_path = Path("grav_test/data/harm_ext.xdmf")
-harm_ext_file_path.unlink(missing_ok=True)
-harm_ext_file_path.with_suffix(".h5").unlink(missing_ok=True)
-harm_ext_file = df.XDMFFile(str(harm_ext_file_path))
-harm_ext_file.write(msh)
-
 don_ext_file_path = Path("grav_test/data/don_ext.xdmf")
 don_ext_file_path.unlink(missing_ok=True)
 don_ext_file_path.with_suffix(".h5").unlink(missing_ok=True)
@@ -110,12 +104,6 @@ biharm_signs_file_path.with_suffix(".h5").unlink(missing_ok=True)
 biharm_signs_file = df.XDMFFile(str(biharm_signs_file_path))
 biharm_signs_file.write(msh)
 
-harm_signs_file_path = Path("grav_test/data/harm_signs.xdmf")
-harm_signs_file_path.unlink(missing_ok=True)
-harm_signs_file_path.with_suffix(".h5").unlink(missing_ok=True)
-harm_signs_file = df.XDMFFile(str(harm_signs_file_path))
-harm_signs_file.write(msh)
-
 don_signs_file_path = Path("grav_test/data/don_signs.xdmf")
 don_signs_file_path.unlink(missing_ok=True)
 don_signs_file_path.with_suffix(".h5").unlink(missing_ok=True)
@@ -124,17 +112,15 @@ don_signs_file.write(msh)
 
 
 
-from grav_test.extensions import BiharmonicExtension, HarmonicExtension, DeepONetExtension
+from grav_test.extensions import BiharmonicExtension, DeepONetExtension
 
 biharmonic_extension = BiharmonicExtension(V)
-harmonic_extension = HarmonicExtension(V)
 deeponet_extension = DeepONetExtension(V, deeponet, eval_points_np, mask_np)
 
 from grav_test.degeneracy_check import get_degenerate_cells
 from tools.mesh_quality import MeshQuality
 scaled_jacobian = MeshQuality(msh, "scaled_jacobian")
 
-harm_signed_mq_arr = np.zeros((3, msh.num_cells()))
 biharm_signed_mq_arr = np.zeros((3, msh.num_cells()))
 don_signed_mq_arr = np.zeros((3, msh.num_cells()))
 
@@ -145,35 +131,27 @@ for k in range(3):
     bc = df.DirichletBC(V, u_input_V, "on_boundary")
 
 
-    u_h = harmonic_extension.extend(u_input_V)
     u_b = biharmonic_extension.extend(u_input_V)
     u_don = deeponet_extension.extend(u_input_V)
 
-    signs_h = get_degenerate_cells(u_h, tensor_dg_order=6)
     signs_b = get_degenerate_cells(u_b, tensor_dg_order=6)
     signs_don = get_degenerate_cells(u_don, tensor_dg_order=6)
 
-    harm_ext_file.write_checkpoint(u_h, "uh", k, append=True)
     biharm_ext_file.write_checkpoint(u_b, "uh", k, append=True)
     don_ext_file.write_checkpoint(u_don, "uh", k, append=True)
 
-    harm_signs_file.write_checkpoint(signs_h, "Sign", k, append=True)
     biharm_signs_file.write_checkpoint(signs_b, "Sign", k, append=True)
     don_signs_file.write_checkpoint(signs_don, "Sign", k, append=True)
 
-    harm_mq = scaled_jacobian(u_h)
     biharm_mq = scaled_jacobian(u_b)
     don_mq = scaled_jacobian(u_don)
 
-    signed_harm_mq = harm_mq * signs_h.vector()[:]
     signed_biharm_mq = biharm_mq * signs_b.vector()[:]
     signed_don_mq = don_mq * signs_don.vector()[:]
 
-    harm_signed_mq_arr[k,:] = signed_harm_mq
     biharm_signed_mq_arr[k,:] = signed_biharm_mq
     don_signed_mq_arr[k,:] = signed_don_mq
 
-np.save("grav_test/data/harm_signed_mq_arr.npy", harm_signed_mq_arr)
 np.save("grav_test/data/biharm_signed_mq_arr.npy", biharm_signed_mq_arr)
 np.save("grav_test/data/don_signed_mq_arr.npy", don_signed_mq_arr)
 

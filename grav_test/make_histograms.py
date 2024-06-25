@@ -41,7 +41,6 @@ def make_histograms_shorter_allpos(biharm_smq_arr: np.ndarray, don_smq_arr: np.n
 if __name__ == "__main__":
 
     try:
-        harm_signed_mq_arr = np.load("grav_test/data/harm_signed_mq_arr.npy")
         biharm_signed_mq_arr = np.load("grav_test/data/biharm_signed_mq_arr.npy")
         don_signed_mq_arr = np.load("grav_test/data/don_signed_mq_arr.npy")
 
