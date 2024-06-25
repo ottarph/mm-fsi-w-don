@@ -22,3 +22,5 @@ output
 .DS_Store
 
 DATA
+
+random_initialization/base_problem.json

@@ -227,7 +227,7 @@ def main():
                     problem_dict["branch"]["MLP"]["widths"] = [412] + [w] * d + [p]
                     problem_dict["trunk"]["MLP"]["widths"] = [2] + [w] * d + [p]
                     problem_dict["seed"] = run
-                    problem_dict["num_epochs"] = 2000 if (w, d, p, run) == (512, 7, 64, 0) else epochs_per_run
+                    problem_dict["num_epochs"] = epochs_per_run
                     print()
                     print(f"{w = }, {d = }, {p = }, {run = }, progress {current_run} / {num_runs}")
                     with open(LOG_FILE_PATH, "a") as outfile:

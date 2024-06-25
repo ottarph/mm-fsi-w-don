@@ -52,7 +52,7 @@ FSI_param['nyf'] = 1.0e-3
 FSI_param['t'] = 0.0
 FSI_param['deltat'] = 0.0025
 # FSI_param['deltat'] = 0.01
-FSI_param['T'] = 15.05
+FSI_param['T'] = 16.0
 FSI_param["save_int"] = 0.01
 
 FSI_param['displacement_point'] = df.Point((0.6, 0.2))

@@ -11,6 +11,8 @@ def main():
     else:
         env["PYTHONPATH"] = "."
 
+    sp.run(["date"], stdout = open("time_start.txt", "w"))
+
     sp.run(["python3", "scripts/download_data.py"], env=env, check=True)
 
 
@@ -39,6 +41,8 @@ def main():
     sp.run(["python3", "deeponet_extension/run_biharm.py"], env=env, check=True)
     
     sp.run(["python3", "deeponet_extension/plot_quantities.py"], env=env, check=True)
+
+    sp.run(["date"], stdout = open("time_end.txt", "w"))
 
     return
 

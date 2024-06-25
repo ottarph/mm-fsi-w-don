@@ -1,6 +1,6 @@
 {
-    "num_runs": 10,
-    "epochs_per_run": 200,
+    "num_runs": 20,
+    "epochs_per_run": 40000,
     "expected_time_per_epoch": 0.05,
     "RESULTS_DIR": "random_initialization/study/results/runs",
     "FIGURES_DIR": "random_initialization/study/figures",
