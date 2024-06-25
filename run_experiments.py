@@ -16,6 +16,10 @@ def main():
 
     sp.run(["python3", "scripts/compute_biharm_mesh_data.py", "dataset/learnext_period_p1", "output/data/biharm_min_mq.csv"], env=env)
 
+    sp.run(["python3", "hyperparameter_study/study.py"], env=env)
+
+    
+
     return
 
 if __name__ == "__main__":

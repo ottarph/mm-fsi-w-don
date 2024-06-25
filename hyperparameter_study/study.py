@@ -20,6 +20,7 @@ from dataset.dataset import MeshData, FEniCSDataset, load_MeshData, ToDType
 def run_boundary_problem_hpar(problem_file: Path, results_dir: Path) -> tuple[DeepONet, float]:
 
     latest_results_dir: Path = Path("hyperparameter_study/latest_results")
+    latest_results_dir.mkdir(parents=True, exist_ok=True)
     device = "cuda"
 
     deeponet, train_dataloader, val_dataloader, dset, \
