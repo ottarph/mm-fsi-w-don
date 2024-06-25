@@ -135,7 +135,7 @@ def run_boundary_problem_hpar(problem_file: Path, results_dir: Path) -> tuple[De
 
     plt.close(fig)
 
-    return deeponet, max_diff_mq
+    return deeponet, max_diff_mq, deeponet_min_mq
 
 
 
@@ -152,7 +152,7 @@ def run_problem_conf(problem_dict: dict, SAVE_TO_DIR: Path, config_dict: dict,
     with open(STAGING_DIR / "problem.json", "w") as outfile:
         json.dump(problem_dict, outfile, indent=4)
         
-    deeponet, max_diff_mq = run_boundary_problem_hpar(problem_file=STAGING_DIR / "problem.json",
+    deeponet, max_diff_mq, deeponet_min_mq = run_boundary_problem_hpar(problem_file=STAGING_DIR / "problem.json",
                               results_dir=SAVE_TO_DIR)
 
     with open(SAVE_TO_DIR / "problem.json", "r") as infile:
@@ -163,6 +163,7 @@ def run_problem_conf(problem_dict: dict, SAVE_TO_DIR: Path, config_dict: dict,
         shutil.copytree(SAVE_TO_DIR, BEST_RUN_DIR, dirs_exist_ok=True)
         save_model(deeponet.trunk, BEST_RUN_DIR / "trunk.pt")
         save_model(deeponet.branch, BEST_RUN_DIR / "branch.pt")
+        np.savetxt(BEST_RUN_DIR / "min_mesh_mq.txt", deeponet_min_mq)
         (BEST_RUN_DIR / "run.txt").write_text(
             str(SAVE_TO_DIR.parts[-2])+"/"+str(SAVE_TO_DIR.parts[-1])
         )
@@ -235,6 +236,22 @@ def main():
                     best_max_diff_mq = run_problem_conf(problem_dict, RUN_DIR, 
                                                         config_dict, best_max_diff_mq)
                     current_run += 1
+
+    # Make minimum mesh quality plot for best run.
+    from random_initialization.make_plots import make_single_mesh_quality_plot
+
+    data_path = Path(config_dict["BEST_RUN_DIR"]) / "min_mesh_mq.txt"
+    min_mq_arr = np.loadtxt(data_path)
+
+    figsize = (6,3)
+    sp_adj_kws = {"left": 0.095, "top": 0.99, "right": 0.99, "bottom": 0.145}
+    # sp_adj_kws = {}
+    fig, ax = make_single_mesh_quality_plot(min_mq_arr, figsize=figsize)
+    fig.subplots_adjust(**sp_adj_kws)
+    ax.set_xlabel(ax.get_xlabel(), fontsize=12)
+    ax.set_ylabel(ax.get_ylabel(), fontsize=12)
+
+    fig.savefig("output/figures/best_run_min_mesh_mq.pdf")
 
     with open(LOG_FILE_PATH, "a") as outfile:
         outfile.write(
