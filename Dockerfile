@@ -267,40 +267,10 @@ RUN export HDF5_MPI=ON \
     && python3 -m pip install --no-cache-dir cython pkgconfig mpi4py \
     && python3 -m pip install --no-cache-dir --no-binary=h5py --no-build-isolation h5py -vv
 
-# Remove meshio install?
-# RUN python3 -m pip install --no-cache-dir meshio
 
 WORKDIR /
 
 
-# FROM cuda-fenics-end-user-gmsh AS cuda-fenics-adjoint
-
-# # Install dolfin-adjoint
-# RUN python3 -m pip install --no-cache-dir git+https://github.com/dolfin-adjoint/dolfin-adjoint.git
-
-
-
-# ## Install Ipopt
-# WORKDIR /usr/local
-# RUN git clone https://github.com/coin-or/Ipopt.git
-# RUN git clone https://github.com/coin-or-tools/ThirdParty-Mumps.git
-# RUN cd ThirdParty-Mumps && ./get.Mumps && ./configure --prefix=/usr/local && make && make install
-# RUN cd Ipopt && mkdir build && cd build && ../configure --without-hsl --without-asl --with-lapack --with-mumps --prefix=/usr/local && make && make test && make install
-
-# ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-# ENV PATH=/usr/local/bin:$PATH
-# ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
-
-
-# # Install cyipopt
-# RUN /bin/bash -l -c "pip3 install --no-cache-dir Cython"
-# RUN /bin/bash -l -c "pip3 install --no-cache-dir six"
-
-# RUN /bin/bash -l -c "pip3 install --no-cache-dir git+https://github.com/mechmotum/cyipopt.git"
-
-
-
-# FROM cuda-fenics-adjoint AS cuda-fenics-pytorch
 FROM cuda-fenics-end-user-gmsh AS cuda-fenics-pytorch
 
 RUN python3 -m pip install --no-cache-dir torch
@@ -316,10 +286,3 @@ RUN python3 -m pip install --no-cache-dir pyvista
 
 # Install everything else
 RUN python3 -m pip install --no-cache-dir numpy matplotlib ipykernel tqdm pytest pyyaml
-
-# Skip gmshnics, only used for making the mesh for gravity-driven test, but the code for running the elasticity
-# is not even in the repo, only included as a dataset. 
-# gmshnics has not been updated to ufl_legacy, so we skip it
-# # Install gmshnics
-# RUN python3 -m pip install git+https://github.com/MiroK/gmshnics.git
-
