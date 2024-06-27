@@ -18,6 +18,9 @@ def main():
     sp.run(["mv", "TMP_DATA_DIR/mesh", "deeponet_extension/data/mesh"], check=True)
     sp.run(["mv", "TMP_DATA_DIR/warmstart/state", "deeponet_extension/data/warmstart_state"], check=True)
 
+    Path("deeponet_extension/models").mkdir(parents=True, exist_ok=True)
+    sp.run(["mv", "TMP_DATA_DIR/best_run_model", "deeponet_extension/models/pretrained_best_run"], check=True)
+
     sp.run(["rm", "-r", "TMP_DATA_DIR"], check=True)
 
     return

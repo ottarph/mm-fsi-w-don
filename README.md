@@ -1,3 +1,15 @@
-# learnext-neural-operators
+# Accompanying code for *Mesh Motion In Fluid-Structure Interaction With Deep Operator Networks*.
 
-Experiments for using neural operators in learning boundary deformation extension operators. Building on work in [recent preprint](https://arxiv.org/abs/2206.02217).
+All experiments have been tested and run with the accompanying Docker image at ---, which includes a build of the 2019.2.0.dev0-version
+of ``dolfin``, necessary for the FSI-solver, over a cuda-compatible base image. 
+
+To run all experiments, launch docker container with gpu available and run the scripts ``download_data.py`` and ``run_experiments.py``.
+This will produce the figures used in the manuscript, placed in ``output/figures``.
+Both the hyperparameter study and the random initialization study involves a large number of runs of a lengthy training process
+so running all the experiments takes a long time, approximately 29 hours on our system.
+
+A pretrained copy of the best performing model in the hyperparameter study is included in the accompanying dataset, and is placed at 
+``deeponet_extension/models/pretrained_best_run`` by running ``download_data.py``. A single model can be trained by running 
+``scripts/run_deeponet_training.py`` and specifying an appropriate ``problem.json`` file, for instance the one at 
+``hyperparameter_study/base_problem.json``. 
+

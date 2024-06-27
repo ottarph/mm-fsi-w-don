@@ -13,8 +13,6 @@ def main():
 
     sp.run(["date"], stdout = open("time_start.txt", "w"))
 
-    sp.run(["python3", "scripts/download_data.py"], env=env, check=True)
-
 
     Path("output/data").mkdir(parents=True, exist_ok=True)
     Path("output/figures").mkdir(parents=True, exist_ok=True)
