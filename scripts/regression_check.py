@@ -261,11 +261,6 @@ def main():
 
     print(f"Success: {success}")
 
-    # if success:
-    #     quit(0)
-    # else:
-    #     quit(1)
-
     return 0 if success else 1
 
 
