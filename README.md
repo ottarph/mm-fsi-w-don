@@ -1,7 +1,10 @@
 # Accompanying code for *Mesh Motion In Fluid-Structure Interaction With Deep Operator Networks*.
 
-All experiments have been tested and run with the accompanying Docker image at ---, which includes a build of the 2019.2.0.dev0-version
-of ``dolfin``, necessary for the FSI-solver, over a cuda-compatible base image. 
+All experiments have been tested and run with the accompanying 
+[Docker image](https://github.com/users/ottarph/packages/container/package/mm-fsi-w-don), 
+which includes a build of the 2019.2.0.dev-version of ``dolfin``, necessary for the FSI-solver, 
+over a cuda-compatible base image. The dataset used in the experiments is hosted 
+[on zenodo](https://zenodo.org/records/12582079).
 
 To run all experiments, launch docker container with gpu available and run the scripts ``download_data.py`` and ``run_experiments.py``.
 This will produce the figures used in the manuscript, placed in ``output/figures``.

@@ -9,6 +9,7 @@ __pycache__
 results
 latest_results
 best_run
+pretrained_best_run
 staging
 log.txt
 *.cg1.txt

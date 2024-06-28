@@ -1,12 +1,18 @@
 from pathlib import Path
 import subprocess as sp
+import urllib.request
+import shutil
 
 def main():
 
-    DATA_DIR_PATH = Path("../mm-fsi-w-don-DATA")
+    DATA_URL = "https://zenodo.org/records/12582079/files/mm-fsi-w-don-DATA.tar.gz?download=1"
 
-    Path("TMP_DATA_DIR").mkdir(parents=True, exist_ok=True)
-    sp.run(["cp", "-a", str(DATA_DIR_PATH) + "/.", "TMP_DATA_DIR"], check=True)
+    with urllib.request.urlopen(DATA_URL) as response:
+        with open("TMP_DATA_DIR.tar.gz", 'wb') as f:
+            shutil.copyfileobj(response, f)
+
+    shutil.unpack_archive("TMP_DATA_DIR.tar.gz", "TMP_DATA_DIR")
+
 
     sp.run(["mv", "TMP_DATA_DIR/learnext_dataset/learnext_period_p1", "dataset"], check=True)
 
@@ -21,7 +27,9 @@ def main():
     Path("deeponet_extension/models").mkdir(parents=True, exist_ok=True)
     sp.run(["mv", "TMP_DATA_DIR/best_run_model", "deeponet_extension/models/pretrained_best_run"], check=True)
 
-    sp.run(["rm", "-r", "TMP_DATA_DIR"], check=True)
+
+    Path("TMP_DATA_DIR.tar.gz").unlink()
+    shutil.rmtree("TMP_DATA_DIR")
 
     return
 
